@@ -5,6 +5,10 @@ from typing import Any, Dict, Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
+# Import compatibility shims before configuring passlib so that bcrypt works on
+# platforms where the wheel is missing the ``__about__`` module (e.g. Python
+# 3.13 builds). The import is intentionally unused but ensures side effects run.
+from app.core import bcrypt_compat  # noqa: F401
 from app.core.config import get_settings
 
 settings = get_settings()
