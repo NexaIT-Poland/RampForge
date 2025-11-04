@@ -30,7 +30,7 @@ run-backend:
 	cd backend && python run.py
 
 run-client:
-	@echo "TUI client not yet implemented (Phase 3)"
+	cd client_tui && python run.py
 
 test:
 	cd backend && pytest

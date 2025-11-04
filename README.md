@@ -39,11 +39,17 @@ A lightweight desktop terminal application (TUI) for managing loading/unloading 
 # Install backend dependencies
 make install-backend
 
+# Install TUI client dependencies
+make install-client
+
 # Seed database with demo data
 make seed
 
-# Run backend server
+# Run backend server (Terminal 1)
 make run-backend
+
+# Run TUI client (Terminal 2)
+make run-client
 ```
 
 The API will be available at http://localhost:8000
@@ -138,12 +144,13 @@ DCDock/
 - Conflict resolution notifications
 - Direction-based filtering
 
-### 📋 Phase 3 - TUI (Textual)
-- Login screen
-- Main board (IB/OB/All views)
-- Assignment modals
-- Admin panel
-- Audit viewer
+### ✅ Phase 3 - TUI (Textual)
+- Login screen with authentication
+- Main board with assignment DataTable
+- Real-time WebSocket updates
+- Direction filtering (All/IB/OB)
+- Keyboard-first navigation
+- Assignment delete functionality
 
 ### 📋 Phase 4 - Production
 - PostgreSQL configuration
@@ -253,6 +260,49 @@ curl -X POST http://localhost:8000/api/assignments/ \
 ```
 
 See [docs/WEBSOCKET.md](docs/WEBSOCKET.md) for full WebSocket API documentation.
+
+## TUI Client (Terminal Interface)
+
+The Textual-based TUI client provides a keyboard-first interface for operators:
+
+### Features
+
+- **Login screen**: Secure JWT authentication
+- **Real-time board**: Live updates via WebSocket
+- **Direction filtering**: Switch between All/Inbound/Outbound views
+- **Keyboard shortcuts**:
+  - `r` - Refresh assignments
+  - `d` - Delete selected assignment
+  - `1` - Show all assignments
+  - `2` - Show inbound only
+  - `3` - Show outbound only
+  - `Esc` - Quit
+
+### Running the TUI Client
+
+```bash
+# Terminal 1: Start backend
+cd backend && python run.py
+
+# Terminal 2: Start TUI client
+cd client_tui && python run.py
+```
+
+Or using the installed command:
+```bash
+dcdock --api-url http://localhost:8000 --ws-url ws://localhost:8000
+```
+
+### TUI Screenshots
+
+The TUI displays:
+- User info and role in header
+- Filter buttons (All/Inbound/Outbound)
+- Real-time status updates
+- Assignment table with: ID, Ramp, Load, Direction, Status, ETAs, Version
+- Footer with keyboard shortcuts
+
+All assignment changes broadcast via WebSocket appear instantly in the table.
 
 ## Optimistic Locking
 
