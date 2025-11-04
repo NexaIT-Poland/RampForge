@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import assignments, audit, auth, loads, ramps, statuses, users
+from app.api import assignments, audit, auth, loads, ramps, statuses, users, websocket
 from app.core.config import get_settings
 from app.db.session import init_db
 
@@ -46,6 +46,7 @@ app.include_router(statuses.router, prefix="/api")
 app.include_router(loads.router, prefix="/api")
 app.include_router(assignments.router, prefix="/api")
 app.include_router(audit.router, prefix="/api")
+app.include_router(websocket.router, prefix="/api")
 
 
 @app.get("/")

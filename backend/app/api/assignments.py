@@ -17,6 +17,7 @@ from app.schemas.assignment import (
     ConflictError,
 )
 from app.services.audit import AuditService
+from app.ws.manager import manager
 
 router = APIRouter(prefix="/assignments", tags=["assignments"])
 
@@ -104,7 +105,18 @@ async def create_assignment(
         .where(Assignment.id == assignment.id)
     )
     assignment = result.scalar_one()
-    return AssignmentDetailResponse.model_validate(assignment)
+    assignment_response = AssignmentDetailResponse.model_validate(assignment)
+
+    # Broadcast WebSocket update
+    await manager.broadcast_assignment_update(
+        assignment_id=assignment.id,
+        action="CREATE",
+        user_id=current_user.id,
+        user_email=current_user.email,
+        assignment_data=assignment_response.model_dump(mode="json"),
+    )
+
+    return assignment_response
 
 
 @router.get("/{assignment_id}", response_model=AssignmentDetailResponse)
@@ -164,14 +176,24 @@ async def update_assignment(
             .where(Assignment.id == assignment_id)
         )
         current_assignment = current_result.scalar_one()
+        current_data = AssignmentDetailResponse.model_validate(current_assignment).model_dump(
+            mode="json"
+        )
+
+        # Broadcast conflict notification
+        await manager.broadcast_conflict(
+            assignment_id=assignment_id,
+            current_version=assignment.version,
+            attempted_version=assignment_in.version,
+            current_data=current_data,
+        )
+
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=ConflictError(
                 current_version=assignment.version,
                 provided_version=assignment_in.version,
-                current_data=AssignmentDetailResponse.model_validate(current_assignment).model_dump(
-                    mode="json"
-                ),
+                current_data=current_data,
             ).model_dump(),
         )
 
@@ -231,7 +253,18 @@ async def update_assignment(
         .where(Assignment.id == assignment_id)
     )
     assignment = result.scalar_one()
-    return AssignmentDetailResponse.model_validate(assignment)
+    assignment_response = AssignmentDetailResponse.model_validate(assignment)
+
+    # Broadcast WebSocket update
+    await manager.broadcast_assignment_update(
+        assignment_id=assignment.id,
+        action="UPDATE",
+        user_id=current_user.id,
+        user_email=current_user.email,
+        assignment_data=assignment_response.model_dump(mode="json"),
+    )
+
+    return assignment_response
 
 
 @router.delete("/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -241,11 +274,24 @@ async def delete_assignment(
     current_user: User = Depends(get_current_active_user),
 ) -> None:
     """Delete assignment."""
-    result = await db.execute(select(Assignment).where(Assignment.id == assignment_id))
+    # Fetch with relationships for WebSocket broadcast
+    result = await db.execute(
+        select(Assignment)
+        .options(
+            selectinload(Assignment.ramp),
+            selectinload(Assignment.load),
+            selectinload(Assignment.status),
+            selectinload(Assignment.creator),
+            selectinload(Assignment.updater),
+        )
+        .where(Assignment.id == assignment_id)
+    )
     assignment = result.scalar_one_or_none()
     if assignment is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assignment not found")
 
+    # Store assignment data for broadcast
+    assignment_data = AssignmentDetailResponse.model_validate(assignment).model_dump(mode="json")
     before = assignment.dict()
 
     # Audit log
@@ -260,3 +306,12 @@ async def delete_assignment(
 
     await db.delete(assignment)
     await db.commit()
+
+    # Broadcast WebSocket update
+    await manager.broadcast_assignment_update(
+        assignment_id=assignment_id,
+        action="DELETE",
+        user_id=current_user.id,
+        user_email=current_user.email,
+        assignment_data=assignment_data,
+    )

@@ -132,10 +132,11 @@ DCDock/
 - Audit logging
 - Seed data script
 
-### 🔄 Phase 2 - Real-time
+### ✅ Phase 2 - Real-time
 - WebSocket implementation
 - Live board updates
-- Conflict resolution UI
+- Conflict resolution notifications
+- Direction-based filtering
 
 ### 📋 Phase 3 - TUI (Textual)
 - Login screen
@@ -217,6 +218,41 @@ make seed
 
 ### Audit Logs
 - `GET /api/audit/` - List audit logs (filterable)
+
+### WebSocket (Real-time)
+- `WS /api/ws?token=JWT` - Real-time assignment updates
+- `GET /api/ws/stats` - WebSocket connection statistics
+
+## WebSocket Real-Time Updates
+
+DCDock provides real-time updates for all assignment changes via WebSocket:
+
+- **Instant notifications**: Assignment CREATE, UPDATE, DELETE operations
+- **Conflict alerts**: Real-time notifications when optimistic locking detects conflicts
+- **Direction filtering**: Subscribe to only INBOUND or OUTBOUND updates
+- **Multi-client support**: 20+ concurrent connections
+
+### Quick WebSocket Test
+
+```bash
+# Terminal 1: Start server
+cd backend && python run.py
+
+# Terminal 2: Connect WebSocket test client
+python backend/test_websocket_client.py
+
+# Terminal 3: Make changes via API
+TOKEN=$(curl -s -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@dcdock.com","password":"admin123"}' | jq -r '.access_token')
+
+curl -X POST http://localhost:8000/api/assignments/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"ramp_id": 1, "load_id": 1, "status_id": 2}'
+```
+
+See [docs/WEBSOCKET.md](docs/WEBSOCKET.md) for full WebSocket API documentation.
 
 ## Optimistic Locking
 
