@@ -45,5 +45,8 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
             token, settings.secret_key, algorithms=[settings.algorithm]
         )
         return payload
-    except JWTError:
+    except JWTError as e:
+        print(f"JWT decode error: {e}")
+        print(f"Token: {token[:50]}...")
+        print(f"SECRET_KEY: {settings.secret_key[:30]}...")
         return None
