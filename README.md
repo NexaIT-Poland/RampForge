@@ -42,7 +42,7 @@ A lightweight desktop terminal application (TUI) for managing loading/unloading 
 
 This script will:
 - Create virtual environments for both backend and client
-- Install all dependencies (including bcrypt and email-validator fixes)
+- Install all dependencies (including the bcrypt compatibility fix; email validation now works without extra packages)
 - Initialize the database with demo data
 
 **2. Start Backend (Terminal 1):**
@@ -71,7 +71,6 @@ python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -e ".[dev]"
 pip install --force-reinstall "bcrypt>=4.0.0,<5.0.0"
-pip install email-validator
 python -m app.seed
 python run.py
 

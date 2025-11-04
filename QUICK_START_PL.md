@@ -40,7 +40,7 @@ python setup.py
 To zajmie 2-3 minuty. Skrypt:
 - Utworzy wirtualne środowiska Python (odizolowane od systemu)
 - Zainstaluje wszystkie biblioteki
-- Naprawi problemy z bcrypt i email-validator
+- Naprawi problemy z bcrypt (walidacja e-mail działa teraz także bez dodatkowej paczki)
 - Utworzy bazę danych SQLite z przykładowymi danymi
 
 **Przykładowy output:**
@@ -59,7 +59,7 @@ Creating virtual environment...
 Installing dependencies...
 ✓ Dependencies installed
 ✓ bcrypt version fixed
-✓ email-validator installed
+✓ Walidacja e-mail gotowa (nie wymaga dodatkowych paczek)
 Initializing database with demo data...
 ✓ Database initialized
 
@@ -281,7 +281,7 @@ pip install --force-reinstall "bcrypt>=4.0.0,<5.0.0"
 
 ### Problem: "email-validator is not installed"
 
-Setup automatycznie to naprawia. Jeśli wystąpi ręcznie:
+Walidacja adresów e-mail działa teraz bez dodatkowych pakietów, więc ten komunikat można zignorować. Jeśli jednak chcesz ręcznie dodać pełną walidację biblioteki `email-validator`, wykonaj:
 ```bash
 cd backend
 source venv/bin/activate
