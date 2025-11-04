@@ -152,10 +152,13 @@ DCDock/
 - Keyboard-first navigation
 - Assignment delete functionality
 
-### 📋 Phase 4 - Production
-- PostgreSQL configuration
-- PyInstaller packaging
-- Windows/macOS executables
+### ✅ Phase 4 - Production
+- PostgreSQL support with environment configuration
+- PyInstaller build system for portable executables
+- Windows/macOS/Linux executable builds
+- Docker Compose for production deployment
+- Production deployment documentation
+- Security best practices guide
 
 ## Development Commands
 
@@ -303,6 +306,115 @@ The TUI displays:
 - Footer with keyboard shortcuts
 
 All assignment changes broadcast via WebSocket appear instantly in the table.
+
+## Production Deployment
+
+### PostgreSQL Setup
+
+DCDock supports PostgreSQL for production deployments. The application automatically detects the database type from the `DATABASE_URL`.
+
+**1. Install PostgreSQL:**
+```bash
+# Ubuntu/Debian
+sudo apt install postgresql postgresql-contrib
+
+# macOS
+brew install postgresql@16
+brew services start postgresql@16
+```
+
+**2. Create database:**
+```bash
+sudo -u postgres psql
+CREATE DATABASE dcdock;
+CREATE USER dcdock_user WITH PASSWORD 'your_secure_password';
+GRANT ALL PRIVILEGES ON DATABASE dcdock TO dcdock_user;
+\q
+```
+
+**3. Configure backend:**
+```bash
+cd backend
+cp .env.production .env
+
+# Edit .env and update:
+# DATABASE_URL=postgresql+asyncpg://dcdock_user:password@localhost:5432/dcdock
+# SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_urlsafe(32))">
+```
+
+**4. Initialize and seed:**
+```bash
+python -m app.seed
+python run.py
+```
+
+### Building Portable Executables
+
+Build standalone TUI client executables that require no Python installation:
+
+**Windows:**
+```cmd
+cd client_tui
+pip install -e ".[build]"
+build.bat
+```
+
+**macOS/Linux:**
+```bash
+cd client_tui
+pip install -e ".[build]"
+./build.sh
+```
+
+**Output:** Executables created in `client_tui/dist/`
+- Windows: `dcdock.exe`
+- macOS: `dcdock.app`
+- Linux: `dcdock`
+
+**Distribution:**
+Copy the executable to any machine and run:
+```bash
+dcdock --api-url https://your-server.com --ws-url wss://your-server.com
+```
+
+### Docker Deployment
+
+Deploy the complete stack with Docker Compose:
+
+```bash
+cd docker
+cp .env.example .env
+
+# Edit .env and set secure passwords
+# Generate SECRET_KEY: python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+**Included services:**
+- PostgreSQL database with persistent storage
+- Backend API server
+- Automatic database initialization
+- Health checks
+
+**Access:**
+- API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+See [docs/PRODUCTION.md](docs/PRODUCTION.md) for complete production deployment guide including:
+- SSL/TLS configuration
+- Nginx reverse proxy setup
+- Security hardening
+- Backup and monitoring
+- Performance tuning
+- Troubleshooting
 
 ## Optimistic Locking
 
