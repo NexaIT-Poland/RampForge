@@ -30,29 +30,59 @@ A lightweight desktop terminal application (TUI) for managing loading/unloading 
 ## Quick Start
 
 ### Prerequisites
-- Python 3.12+
-- pip
+- Python 3.11+ (Python 3.13 recommended)
+- pip or pip3
 
-### Installation
+### Simple 3-Step Setup
 
+**1. Initial Setup (Run Once):**
 ```bash
-# Install backend dependencies
-make install-backend
+./setup.sh
+```
 
-# Install TUI client dependencies
-make install-client
+This script will:
+- Create virtual environments for both backend and client
+- Install all dependencies (including bcrypt and email-validator fixes)
+- Initialize the database with demo data
 
-# Seed database with demo data
-make seed
+**2. Start Backend (Terminal 1):**
+```bash
+./start_backend.sh
+```
 
-# Run backend server (Terminal 1)
-make run-backend
-
-# Run TUI client (Terminal 2)
-make run-client
+**3. Start TUI Client (Terminal 2):**
+```bash
+./start_client.sh
 ```
 
 The API will be available at http://localhost:8000
+
+> **Note:** On macOS, make scripts executable first: `chmod +x setup.sh start_backend.sh start_client.sh`
+
+### Alternative: Manual Installation
+
+<details>
+<summary>Click to expand manual installation steps</summary>
+
+```bash
+# Backend Setup
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -e ".[dev]"
+pip install --force-reinstall "bcrypt>=4.0.0,<5.0.0"
+pip install email-validator
+python -m app.seed
+python run.py
+
+# Client Setup (in new terminal)
+cd client_tui
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -e .
+python -m app.main
+```
+</details>
 
 ### Demo Credentials
 
