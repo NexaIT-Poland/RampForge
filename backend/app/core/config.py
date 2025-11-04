@@ -1,8 +1,9 @@
 """Application configuration."""
 from functools import lru_cache
+from secrets import token_urlsafe
 from typing import List
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,7 +26,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./dcdock.db"
 
     # Security
-    secret_key: str
+    secret_key: str = Field(default_factory=lambda: token_urlsafe(32))
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 1440  # 24 hours
 
