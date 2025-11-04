@@ -1,10 +1,18 @@
 """Audit logging service."""
 import json
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import AuditLog
+
+
+def json_serial(obj: Any) -> Any:
+    """JSON serializer for objects not serializable by default json code."""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Type {type(obj)} not serializable")
 
 
 class AuditService:
@@ -26,8 +34,8 @@ class AuditService:
             entity_type=entity_type,
             entity_id=entity_id,
             action=action,
-            before_json=json.dumps(before) if before else None,
-            after_json=json.dumps(after) if after else None,
+            before_json=json.dumps(before, default=json_serial) if before else None,
+            after_json=json.dumps(after, default=json_serial) if after else None,
         )
         db.add(audit_log)
         await db.flush()
