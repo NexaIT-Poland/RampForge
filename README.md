@@ -11,6 +11,10 @@ A lightweight desktop terminal application (TUI) for managing loading/unloading 
 - **Audit logging** for all changes
 - **Portable executable** for Windows & macOS
 - **SQLite (dev) / PostgreSQL (prod)** database support
+- **Permanent dock assignments** - Admin assigns docks to departments (IB/OB)
+- **Prime/Buffer dock classification** - Admin-defined dock types for table placement
+- **OVERDUE DEPARTURE detection** - Automatic red status for late outbound loads
+- **Automatic database migrations** - Schema updates run on startup
 
 ## Tech Stack
 
@@ -134,7 +138,10 @@ DCDock/
 
 ### Ramps
 - Physical loading/unloading docks
-- Identified by code (R1-R8)
+- Identified by unique code (e.g., R1, R2, R100)
+- **Direction**: Permanent assignment to department (INBOUND or OUTBOUND) - set by admin
+- **Type**: Classification as PRIME (gate area) or BUFFER (overflow) - set by admin
+- Direction and type determine dock behavior and table placement
 
 ### Statuses
 - Workflow states: PLANNED, ARRIVED, IN_PROGRESS, DELAYED, COMPLETED, CANCELLED
@@ -152,6 +159,66 @@ DCDock/
 ### Audit Logs
 - Complete change history
 - Before/after snapshots
+
+## Business Logic & Workflow
+
+### Admin Workflow
+
+Admins are responsible for creating and configuring docks according to the physical distribution center layout:
+
+1. **Create Dock**: Admin adds a new ramp with unique code (e.g., R100)
+2. **Assign Department**: Admin permanently assigns dock to either:
+   - **INBOUND** (IB) - For receiving shipments
+   - **OUTBOUND** (OB) - For dispatching shipments
+3. **Set Dock Type**: Admin classifies dock as:
+   - **PRIME** - Gate area docks (main loading zones)
+   - **BUFFER** - Overflow docks (additional capacity)
+4. **Table Placement**: Docks appear in Prime or Buffer tables based on admin-assigned type (not code pattern)
+
+**Key Point**: Direction and Type are permanent properties set by admin - operators cannot change them.
+
+### Operator Workflow
+
+Operators manage day-to-day dock operations with a simplified workflow:
+
+#### Occupying a Dock
+
+1. **Select Free Dock**: Choose an available dock from the dashboard
+2. **Enter Load Information**:
+   - Load Reference ID (required)
+   - Notes/Comments (optional)
+3. **For OUTBOUND Docks Only**:
+   - **Departure Date** (required) - Format: YYYY-MM-DD HH:MM
+   - Example: "2024-12-15 14:30"
+4. **Direction Inherited**: Operator does NOT select IB/OB - it's inherited from the dock's permanent assignment
+
+#### OVERDUE DEPARTURE Detection
+
+For outbound docks with scheduled departures:
+
+- **Automatic Monitoring**: System continuously checks departure times
+- **Overdue Status**: If current time > planned departure time:
+  - Dock displays red **"OVERDUE DEPARTURE"** status
+  - Indicates load didn't leave on time
+  - Signals that the ramp is blocked by a delayed departure
+
+**Example**:
+- Departure scheduled: 11:00
+- Current time: 13:00
+- Status: 🔴 **OVERDUE DEPARTURE** (2 hours late)
+
+### Automatic Database Migrations
+
+DCDock includes an automatic migration system that runs on backend startup:
+
+- **Zero Downtime**: Existing databases are automatically upgraded
+- **Idempotent**: Safe to run multiple times
+- **Schema Changes**: Adds new fields (direction, type) to existing ramps
+- **Default Values**: Automatically assigns sensible defaults to existing data
+
+**Location**: `backend/app/db/migrations.py`
+
+When you update your installation, simply restart the backend - migrations run automatically.
 
 ## Development Phases
 

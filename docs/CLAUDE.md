@@ -74,9 +74,17 @@ make format
 cd backend && python -m app.seed
 # Or: make seed
 
-# Database migrations (using Alembic)
+# Automatic migrations (recommended - runs on startup)
+# Migrations in app/db/migrations.py run automatically when backend starts
+# This ensures zero-downtime schema updates
+
+# Manual Alembic migrations (if needed)
 cd backend && alembic upgrade head
 cd backend && alembic revision --autogenerate -m "description"
+
+# Note: The automatic migration system (app/db/migrations.py) handles
+# direction and type field additions to ramps table. It is idempotent
+# and safe to run multiple times.
 ```
 
 ### Building Production Executables
@@ -117,11 +125,23 @@ All models inherit from `BaseModel` which provides:
 
 Key models:
 - **User** - Authentication, roles (ADMIN/OPERATOR), tracks created/updated assignments
-- **Ramp** - Physical loading docks (R1-R8), identified by unique code
+- **Ramp** - Physical loading docks, identified by unique code
+  - `code` (String, unique) - Dock identifier (e.g., R1, R2, R100)
+  - `description` (String, optional) - Human-readable description
+  - `direction` (Enum: LoadDirection) - Permanent department assignment: INBOUND or OUTBOUND
+  - `type` (Enum: RampType) - Dock classification: PRIME (gate area) or BUFFER (overflow)
+  - Direction and type are set by admin and determine dock behavior
 - **Status** - Workflow states (PLANNED, ARRIVED, IN_PROGRESS, DELAYED, COMPLETED, CANCELLED) with colors and sort order
 - **Load** - Shipments with direction (IB=inbound, OB=outbound), references, ETAs
+  - `planned_departure` (DateTime, optional) - For OB loads, scheduled departure time
+  - Used for OVERDUE DEPARTURE detection
 - **Assignment** - Central entity linking Ramp + Load + Status with ETAs and audit tracking
+  - `eta_out` (DateTime, optional) - Tracks departure time, used for overdue detection
 - **AuditLog** - Complete change history with before/after JSON snapshots
+
+**Important Enums**:
+- **LoadDirection**: INBOUND, OUTBOUND (stored as full names, not IB/OB)
+- **RampType**: PRIME, BUFFER
 
 ### Optimistic Locking
 
@@ -180,6 +200,105 @@ Both use async drivers (aiosqlite, asyncpg) and support the same features.
 Authorization is enforced via FastAPI dependencies in `app/api/dependencies.py`:
 - `get_current_user()` - Extracts user from JWT
 - `require_admin()` - Ensures user has ADMIN role
+
+### Business Logic & Workflow
+
+#### Admin Workflow (Dock Creation)
+
+When an admin creates a new dock:
+
+1. **Admin creates dock via AddDockModal** (`client_tui/app/screens/enhanced_dashboard.py`):
+   - Enters unique code (e.g., R100)
+   - Selects **Direction**: Inbound (IB) or Outbound (OB) - PERMANENT assignment
+   - Selects **Type**: Prime (gate area) or Buffer (overflow) - PERMANENT classification
+   - Enters optional description
+
+2. **Backend creates ramp** (`backend/app/api/ramps.py`):
+   - Validates unique code
+   - Stores direction (INBOUND/OUTBOUND) and type (PRIME/BUFFER) as permanent properties
+   - Direction and type CANNOT be changed by operators
+
+3. **Table Placement**:
+   - `_is_prime_dock()` method uses `ramp.type` field (NOT code pattern)
+   - PRIME docks appear in "Prime Docks" table
+   - BUFFER docks appear in "Buffer Docks" table
+
+**Key Implementation Details**:
+- `AddDockModal` has two Select widgets: direction and dock-type
+- API call: `POST /api/ramps/` with `{code, direction, type, description}`
+- Direction stored as enum name ("INBOUND"/"OUTBOUND"), not value ("IB"/"OB")
+
+#### Operator Workflow (Dock Occupation)
+
+When an operator occupies a dock:
+
+1. **Operator selects free dock** and triggers `action_occupy_dock()`:
+   - Modal receives `dock_code` and `direction` from selected dock
+   - Direction is READ-ONLY - inherited from ramp's permanent assignment
+
+2. **OccupyDockModal displays** (`client_tui/app/screens/enhanced_dashboard.py`):
+   - Shows dock code and department label (Inbound/Outbound) in title
+   - Load Reference input (required)
+   - Notes input (optional)
+   - **For OUTBOUND docks ONLY**: Departure Date input (required)
+     - Format: "YYYY-MM-DD HH:MM"
+     - Example: "2024-12-15 14:30"
+
+3. **Backend creates load and assignment**:
+   - Load created with `direction` from dock (not operator input)
+   - For OB loads: `planned_departure` set from operator's departure date input
+   - Assignment created with `eta_out` = `planned_departure`
+
+**Key Implementation Details**:
+- `OccupyDockModal.__init__(dock_code: str, direction: str)` - direction passed from dock
+- Modal shows/hides departure date input based on `self.is_outbound = (direction == "OB")`
+- `_occupy_dock_async()` parses departure date: `datetime.strptime(departure_str, "%Y-%m-%d %H:%M")`
+- Assignment includes `eta_out` for departure tracking
+
+#### OVERDUE DEPARTURE Detection
+
+System automatically detects when OB loads haven't departed on time:
+
+1. **Detection Logic** (`client_tui/app/services/ramp_status.py`):
+   - `RampInfo.is_overdue` property checks if `eta_out_dt < current_time`
+   - For OB docks: `if self.is_overdue and self.direction == "OB"`
+   - Sets `status_label = "OVERDUE DEPARTURE"` and `status_color = "red"`
+
+2. **Visual Display**:
+   - Dock shows 🔴 **OVERDUE DEPARTURE** status in red
+   - Indicates load didn't leave on scheduled time
+   - Signals that ramp is blocked by delayed departure
+
+**Key Implementation Details**:
+- Direction comes from `ramp.direction` (permanent), not `load.direction`
+- `RampInfo.__init__()` sets `self.direction = ramp.get("direction")`
+- Overdue check: `self.eta_out_dt < datetime.now(timezone.utc)`
+
+#### Automatic Database Migrations
+
+On backend startup (`backend/app/main.py` lifespan handler):
+
+1. **Migration System** (`backend/app/db/migrations.py`):
+   - `run_migrations()` executes all migration functions in order
+   - `migrate_add_ramp_direction()` - Adds `direction` column with default INBOUND
+   - `migrate_add_ramp_type()` - Adds `type` column with smart defaults:
+     - R1-R8 → PRIME (original gate docks)
+     - R9+ → BUFFER (newer overflow docks)
+
+2. **Idempotent Design**:
+   - Each migration checks if column exists before adding
+   - Safe to run multiple times
+   - Zero-downtime updates for existing installations
+
+3. **Enum Storage**:
+   - SQLAlchemy with `native_enum=False` stores enum NAMES
+   - Direction stored as "INBOUND"/"OUTBOUND" (not "IB"/"OB")
+   - Type stored as "PRIME"/"BUFFER"
+
+**Key Implementation Details**:
+- Migrations use raw SQL via `session.execute(text(...))`
+- Column existence check: `PRAGMA table_info(ramps)` for SQLite
+- Default values assigned in multiple steps for safety
 
 ## Common Development Patterns
 
