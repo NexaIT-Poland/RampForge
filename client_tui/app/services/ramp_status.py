@@ -30,7 +30,9 @@ class RampInfo:
         self.status_color: str = "green"
         self.status_code: str = "FREE"
         self.load_ref: Optional[str] = None
-        self.direction: Optional[str] = None
+        # Direction comes from ramp (permanent assignment by admin), not load
+        self.direction: Optional[str] = ramp.get("direction")
+        self.ramp_type: Optional[str] = ramp.get("type", "PRIME")
         self.eta_in: Optional[str] = None
         self.eta_out: Optional[str] = None
         self.notes: Optional[str] = None
@@ -59,7 +61,7 @@ class RampInfo:
         # Load metadata
         load = self.assignment.get("load", {}) or {}
         self.load_ref = load.get("reference")
-        self.direction = load.get("direction")
+        # Direction is already set from ramp in __init__, not from load
         self.notes = load.get("notes") or self.assignment.get("notes")
         self.eta_in = self.assignment.get("eta_in")
         self.eta_out = self.assignment.get("eta_out")
@@ -72,8 +74,13 @@ class RampInfo:
                 self.notes = load.get("notes", "Blocked")
         else:
             self.status = RampStatus.OCCUPIED
-            self.status_label = status_label or "OCCUPIED"
-            self.status_color = "red" if not self.is_overdue else "orange_red1"
+            # Check for overdue departure (for OB docks)
+            if self.is_overdue and self.direction == "OB":
+                self.status_label = "OVERDUE DEPARTURE"
+                self.status_color = "red"
+            else:
+                self.status_label = status_label or "OCCUPIED"
+                self.status_color = "yellow" if not self.is_overdue else "orange"
             if not self.load_ref:
                 self.load_ref = "Unknown"
 

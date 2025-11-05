@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from app.core.security import get_password_hash
 from app.db.migrations import run_migrations
-from app.db.models import Assignment, Load, LoadDirection, Ramp, Status, User, UserRole
+from app.db.models import Assignment, Load, LoadDirection, Ramp, RampType, Status, User, UserRole
 from app.db.session import AsyncSessionLocal, init_db
 
 
@@ -79,17 +79,18 @@ async def seed_data() -> None:
         print(f"Created {len(users)} users")
 
         # Create ramps - each ramp is dedicated to either INBOUND or OUTBOUND
+        # and classified as Prime (gate area) or Buffer (overflow area)
         ramps = [
-            # Inbound ramps (R1-R4)
-            Ramp(code="R1", description="Ramp 1 - Inbound Loading Bay A", direction=LoadDirection.INBOUND),
-            Ramp(code="R2", description="Ramp 2 - Inbound Loading Bay A", direction=LoadDirection.INBOUND),
-            Ramp(code="R3", description="Ramp 3 - Inbound Loading Bay B", direction=LoadDirection.INBOUND),
-            Ramp(code="R4", description="Ramp 4 - Inbound Loading Bay B", direction=LoadDirection.INBOUND),
-            # Outbound ramps (R5-R8)
-            Ramp(code="R5", description="Ramp 5 - Outbound Unloading Bay C", direction=LoadDirection.OUTBOUND),
-            Ramp(code="R6", description="Ramp 6 - Outbound Unloading Bay C", direction=LoadDirection.OUTBOUND),
-            Ramp(code="R7", description="Ramp 7 - Outbound Unloading Bay D", direction=LoadDirection.OUTBOUND),
-            Ramp(code="R8", description="Ramp 8 - Outbound Unloading Bay D", direction=LoadDirection.OUTBOUND),
+            # Inbound Prime ramps (R1-R4) - Gate area
+            Ramp(code="R1", description="Ramp 1 - Inbound Loading Bay A", direction=LoadDirection.INBOUND, type=RampType.PRIME),
+            Ramp(code="R2", description="Ramp 2 - Inbound Loading Bay A", direction=LoadDirection.INBOUND, type=RampType.PRIME),
+            Ramp(code="R3", description="Ramp 3 - Inbound Loading Bay B", direction=LoadDirection.INBOUND, type=RampType.PRIME),
+            Ramp(code="R4", description="Ramp 4 - Inbound Loading Bay B", direction=LoadDirection.INBOUND, type=RampType.PRIME),
+            # Outbound Prime ramps (R5-R8) - Gate area
+            Ramp(code="R5", description="Ramp 5 - Outbound Unloading Bay C", direction=LoadDirection.OUTBOUND, type=RampType.PRIME),
+            Ramp(code="R6", description="Ramp 6 - Outbound Unloading Bay C", direction=LoadDirection.OUTBOUND, type=RampType.PRIME),
+            Ramp(code="R7", description="Ramp 7 - Outbound Unloading Bay D", direction=LoadDirection.OUTBOUND, type=RampType.PRIME),
+            Ramp(code="R8", description="Ramp 8 - Outbound Unloading Bay D", direction=LoadDirection.OUTBOUND, type=RampType.PRIME),
         ]
         db.add_all(ramps)
         await db.flush()
