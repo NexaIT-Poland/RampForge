@@ -722,12 +722,18 @@ class EnhancedDockDashboard(Screen):
 
     #filter-bar {
         width: 100%;
-        height: 3;
+        height: 4;
         padding: 0 2;
         layout: horizontal;
         align: center middle;
         background: $surface;
         border-bottom: solid $boost;
+    }
+
+    #filter-bar Label {
+        height: 100%;
+        content-align: center middle;
+        padding: 0 1;
     }
 
     #search-input {
@@ -862,7 +868,7 @@ class EnhancedDockDashboard(Screen):
                 f"{role_badge} {self.user_data.get('full_name', 'User')}",
                 id="user-info",
             )
-            yield Label("🚀 DCDock Operations", id="header-title")
+            yield Label("🚀 DCDock v1.0.0 | Made by NEXAIT sp. z o.o.", id="header-title")
 
         # Action bar (buttons)
         with Horizontal(id="action-bar"):
@@ -909,17 +915,15 @@ class EnhancedDockDashboard(Screen):
         buffer_table = self.query_one("#buffer-table", DataTable)
 
         for table in [prime_table, buffer_table]:
-            table.add_columns(
-                "Dock",
-                "Status",
-                "Direction",
-                "Load Ref",
-                "ETA Out",
-                "Duration",
-                "Time Left",
-                "Priority",
-                "Notes",
-            )
+            table.add_column("Dock", width=8)
+            table.add_column("Status", width=20)
+            table.add_column("Direction", width=16)
+            table.add_column("Load Ref", width=18)
+            table.add_column("ETA Out", width=18)
+            table.add_column("Duration", width=12)
+            table.add_column("Time Left", width=12)
+            table.add_column("Priority", width=10)
+            table.add_column("Notes", width=35)
 
         # Setup WebSocket connection status callback
         self.ws_client.set_connection_callback(self._on_ws_connection_change)
