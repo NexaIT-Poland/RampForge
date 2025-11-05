@@ -30,46 +30,49 @@ async def seed_data() -> None:
         print("Seeding database...")
 
         # Create users
+        # NOTE: These are demo/development passwords meeting complexity requirements:
+        # - Min 8 characters, uppercase, lowercase, digit, special character
+        # WARNING: Change these passwords immediately after first login in production!
         users = [
             User(
                 email="admin@dcdock.com",
                 full_name="Admin User",
-                password_hash=get_password_hash("admin123"),
+                password_hash=get_password_hash("Admin123!@#"),
                 role=UserRole.ADMIN,
                 is_active=True,
             ),
             User(
                 email="admin2@dcdock.com",
                 full_name="Admin Two",
-                password_hash=get_password_hash("admin123"),
+                password_hash=get_password_hash("Admin123!@#"),
                 role=UserRole.ADMIN,
                 is_active=True,
             ),
             User(
                 email="operator1@dcdock.com",
                 full_name="John Operator",
-                password_hash=get_password_hash("operator123"),
+                password_hash=get_password_hash("Operator123!@#"),
                 role=UserRole.OPERATOR,
                 is_active=True,
             ),
             User(
                 email="operator2@dcdock.com",
                 full_name="Jane Operator",
-                password_hash=get_password_hash("operator123"),
+                password_hash=get_password_hash("Operator123!@#"),
                 role=UserRole.OPERATOR,
                 is_active=True,
             ),
             User(
                 email="operator3@dcdock.com",
                 full_name="Bob Operator",
-                password_hash=get_password_hash("operator123"),
+                password_hash=get_password_hash("Operator123!@#"),
                 role=UserRole.OPERATOR,
                 is_active=True,
             ),
             User(
                 email="operator4@dcdock.com",
                 full_name="Alice Operator",
-                password_hash=get_password_hash("operator123"),
+                password_hash=get_password_hash("Operator123!@#"),
                 role=UserRole.OPERATOR,
                 is_active=True,
             ),
@@ -245,8 +248,9 @@ async def seed_data() -> None:
 
         print("✓ Database seeded successfully!")
         print("\nDemo credentials:")
-        print("  Admin: admin@dcdock.com / admin123")
-        print("  Operator: operator1@dcdock.com / operator123")
+        print("  Admin: admin@dcdock.com / Admin123!@#")
+        print("  Operator: operator1@dcdock.com / Operator123!@#")
+        print("\n⚠️  WARNING: Change default passwords after first login in production!")
 
 
 if __name__ == "__main__":

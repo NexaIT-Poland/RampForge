@@ -16,7 +16,12 @@ async def get_websocket_user(websocket: WebSocket) -> Optional[dict]:
     """
     Authenticate WebSocket connection via token.
 
-    Expects token in query parameters: ws://host/ws?token=JWT_TOKEN
+    Accepts token from (in order of preference):
+    1. Sec-WebSocket-Protocol header: "Bearer, <JWT_TOKEN>"
+    2. Query parameters (deprecated): ws://host/ws?token=JWT_TOKEN
+
+    The Sec-WebSocket-Protocol approach is more secure as tokens
+    won't appear in server logs or browser history.
 
     Args:
         websocket: WebSocket connection
@@ -24,7 +29,32 @@ async def get_websocket_user(websocket: WebSocket) -> Optional[dict]:
     Returns:
         User data from token or None
     """
-    token = websocket.query_params.get("token")
+    token = None
+
+    # Try to get token from Sec-WebSocket-Protocol header (preferred)
+    protocols = websocket.headers.get("sec-websocket-protocol", "")
+    if protocols:
+        # Format: "Bearer, <token>" or just "<token>"
+        parts = [p.strip() for p in protocols.split(",")]
+        for part in parts:
+            if part.lower().startswith("bearer."):
+                # Format: "Bearer.<token>"
+                token = part[7:]  # Remove "Bearer." prefix
+                break
+            elif len(part) > 20 and "." in part:  # JWT tokens have dots
+                # Assume it's a bare token
+                token = part
+                break
+
+    # Fallback to query parameter (deprecated but backward compatible)
+    if not token:
+        token = websocket.query_params.get("token")
+        if token:
+            logger.warning(
+                "JWT token provided in query parameter - this is deprecated. "
+                "Use Sec-WebSocket-Protocol header instead for better security."
+            )
+
     if not token:
         return None
 
@@ -40,7 +70,18 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
     """
     WebSocket endpoint for real-time updates.
 
-    Connection URL: ws://localhost:8000/api/ws?token=YOUR_JWT_TOKEN
+    Authentication (recommended - using header):
+    ```python
+    websockets.connect(
+        "ws://localhost:8000/api/ws",
+        subprotocols=["Bearer." + jwt_token]
+    )
+    ```
+
+    Authentication (deprecated - using query param):
+    ```
+    ws://localhost:8000/api/ws?token=YOUR_JWT_TOKEN
+    ```
 
     Message format (client to server):
     ```json

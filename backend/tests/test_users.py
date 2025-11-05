@@ -100,7 +100,7 @@ class TestCreateUser:
         user_data = {
             "email": "newuser@test.com",
             "full_name": "New User",
-            "password": "newpassword123",
+            "password": "NewPassword123!",  # Valid password meeting complexity requirements
             "role": "OPERATOR",
             "is_active": True,
         }
@@ -196,12 +196,92 @@ class TestCreateUser:
         user_data = {
             "email": "invalidrole@test.com",
             "full_name": "Invalid Role",
-            "password": "password123",
+            "password": "ValidPass123!",
             "role": "SUPERADMIN",  # Invalid role
             "is_active": True,
         }
         response = await client.post("/api/users/", json=user_data, headers=admin_headers)
         assert response.status_code == 422  # Validation error
+
+    async def test_create_user_password_too_short(
+        self, client: AsyncClient, admin_headers: dict[str, str]
+    ):
+        """Test creating user with password shorter than 8 characters."""
+        user_data = {
+            "email": "shortpw@test.com",
+            "full_name": "Short Password",
+            "password": "Ab1!",  # Only 4 characters
+            "role": "OPERATOR",
+            "is_active": True,
+        }
+        response = await client.post("/api/users/", json=user_data, headers=admin_headers)
+        assert response.status_code == 422  # Validation error
+        data = response.json()
+        assert "8 characters" in str(data["detail"]).lower()
+
+    async def test_create_user_password_no_uppercase(
+        self, client: AsyncClient, admin_headers: dict[str, str]
+    ):
+        """Test creating user with password missing uppercase letter."""
+        user_data = {
+            "email": "noupper@test.com",
+            "full_name": "No Uppercase",
+            "password": "password123!",  # No uppercase
+            "role": "OPERATOR",
+            "is_active": True,
+        }
+        response = await client.post("/api/users/", json=user_data, headers=admin_headers)
+        assert response.status_code == 422  # Validation error
+        data = response.json()
+        assert "uppercase" in str(data["detail"]).lower()
+
+    async def test_create_user_password_no_lowercase(
+        self, client: AsyncClient, admin_headers: dict[str, str]
+    ):
+        """Test creating user with password missing lowercase letter."""
+        user_data = {
+            "email": "nolower@test.com",
+            "full_name": "No Lowercase",
+            "password": "PASSWORD123!",  # No lowercase
+            "role": "OPERATOR",
+            "is_active": True,
+        }
+        response = await client.post("/api/users/", json=user_data, headers=admin_headers)
+        assert response.status_code == 422  # Validation error
+        data = response.json()
+        assert "lowercase" in str(data["detail"]).lower()
+
+    async def test_create_user_password_no_digit(
+        self, client: AsyncClient, admin_headers: dict[str, str]
+    ):
+        """Test creating user with password missing digit."""
+        user_data = {
+            "email": "nodigit@test.com",
+            "full_name": "No Digit",
+            "password": "Password!@#",  # No digit
+            "role": "OPERATOR",
+            "is_active": True,
+        }
+        response = await client.post("/api/users/", json=user_data, headers=admin_headers)
+        assert response.status_code == 422  # Validation error
+        data = response.json()
+        assert "digit" in str(data["detail"]).lower()
+
+    async def test_create_user_password_no_special_char(
+        self, client: AsyncClient, admin_headers: dict[str, str]
+    ):
+        """Test creating user with password missing special character."""
+        user_data = {
+            "email": "nospecial@test.com",
+            "full_name": "No Special",
+            "password": "Password123",  # No special character
+            "role": "OPERATOR",
+            "is_active": True,
+        }
+        response = await client.post("/api/users/", json=user_data, headers=admin_headers)
+        assert response.status_code == 422  # Validation error
+        data = response.json()
+        assert "special" in str(data["detail"]).lower()
 
 
 class TestGetUser:
