@@ -4,6 +4,10 @@ from typing import Any, Dict, List, Optional
 import httpx
 from pydantic import BaseModel
 
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 class APIError(Exception):
     """API error exception."""
@@ -75,11 +79,16 @@ class APIClient:
                     params=params,
                 )
                 if response.status_code != 200:
-                    print(f"API Error: {response.status_code} - {response.text}")
+                    logger.error(
+                        f"API Error fetching assignments: {response.status_code}",
+                        extra={"status_code": response.status_code, "response": response.text[:500]}
+                    )
                     raise APIError(response.status_code, response.text)
                 return response.json()
+            except APIError:
+                raise
             except Exception as e:
-                print(f"Failed to get assignments: {e}")
+                logger.error(f"Failed to get assignments: {e}", exc_info=True)
                 raise
 
     async def get_assignment(self, assignment_id: int) -> Dict[str, Any]:

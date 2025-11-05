@@ -6,6 +6,10 @@ from typing import Any, Callable, Dict, Optional
 import websockets
 from websockets.client import WebSocketClientProtocol
 
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 class WebSocketClient:
     """WebSocket client for DCDock real-time updates."""
@@ -41,11 +45,12 @@ class WebSocketClient:
             )
             self.running = True
             self._task = asyncio.create_task(self._listen())
+            logger.info(f"WebSocket connected to {self.base_url}")
         except asyncio.TimeoutError:
-            print(f"WebSocket connection timeout to {uri}")
+            logger.error(f"WebSocket connection timeout to {uri}", exc_info=True)
             raise
         except Exception as e:
-            print(f"WebSocket connection failed: {e}")
+            logger.error(f"WebSocket connection failed: {e}", exc_info=True)
             raise
 
     async def _listen(self) -> None:
@@ -63,21 +68,22 @@ class WebSocketClient:
                     try:
                         self.callbacks[message_type](data)
                     except Exception as e:
-                        print(f"Error in callback for {message_type}: {e}")
+                        logger.error(f"Error in callback for {message_type}: {e}", exc_info=True)
 
                 # Call generic callback if registered
                 if "*" in self.callbacks:
                     try:
                         self.callbacks["*"](data)
                     except Exception as e:
-                        print(f"Error in generic callback: {e}")
+                        logger.error(f"Error in generic callback: {e}", exc_info=True)
 
         except websockets.exceptions.ConnectionClosed:
-            pass
+            logger.info("WebSocket connection closed")
         except Exception as e:
-            print(f"WebSocket error: {e}")
+            logger.error(f"WebSocket error: {e}", exc_info=True)
         finally:
             self.running = False
+            logger.debug("WebSocket listener stopped")
 
     async def subscribe(self, direction: Optional[str] = None) -> None:
         """Subscribe with optional direction filter."""

@@ -30,7 +30,25 @@ async def list_assignments(
     skip: int = 0,
     limit: int = 100,
 ) -> List[AssignmentDetailResponse]:
-    """List all assignments with full details."""
+    """
+    List all assignments with full details.
+
+    Fetches assignments with eagerly loaded relationships (ramp, load, status, creator, updater)
+    to avoid N+1 query problems. Supports filtering by load direction and pagination.
+
+    Args:
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+        direction: Optional filter by IB (Inbound) or OB (Outbound)
+        skip: Number of records to skip for pagination (default: 0)
+        limit: Maximum number of records to return (default: 100)
+
+    Returns:
+        List[AssignmentDetailResponse]: List of assignments with full relationship data
+
+    Raises:
+        HTTPException: 401 if user is not authenticated
+    """
     query = (
         select(Assignment)
         .options(
@@ -57,7 +75,25 @@ async def create_assignment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ) -> AssignmentDetailResponse:
-    """Create a new assignment."""
+    """
+    Create a new dock assignment.
+
+    Assigns a load to a ramp with a specific status. Validates that the referenced
+    ramp, load, and status exist. Logs the action in audit trail and broadcasts
+    the creation event via WebSocket to all connected clients.
+
+    Args:
+        assignment_in: Assignment data including ramp_id, load_id, status_id, eta_in, eta_out
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+
+    Returns:
+        AssignmentDetailResponse: Created assignment with all relationships populated
+
+    Raises:
+        HTTPException: 404 if ramp, load, or status not found
+        HTTPException: 401 if user is not authenticated
+    """
     # Validate that ramp, load, and status exist
     ramp_result = await db.execute(select(Ramp).where(Ramp.id == assignment_in.ramp_id))
     if ramp_result.scalar_one_or_none() is None:
@@ -153,8 +189,24 @@ async def update_assignment(
     """
     Update assignment with optimistic locking.
 
-    Requires version number to prevent concurrent update conflicts.
-    Returns 409 Conflict if version mismatch detected.
+    Implements optimistic locking to prevent concurrent update conflicts. The client
+    must provide the current version number. If another user has modified the assignment
+    since the client retrieved it, a 409 Conflict is returned with the current data.
+    The conflict is also broadcast via WebSocket to notify other clients.
+
+    Args:
+        assignment_id: ID of assignment to update
+        assignment_in: Update data with version number for optimistic locking
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+
+    Returns:
+        AssignmentDetailResponse: Updated assignment with incremented version
+
+    Raises:
+        HTTPException: 404 if assignment not found
+        HTTPException: 409 if version mismatch (includes current_version, provided_version, current_data)
+        HTTPException: 401 if user is not authenticated
     """
     result = await db.execute(select(Assignment).where(Assignment.id == assignment_id))
     assignment = result.scalar_one_or_none()

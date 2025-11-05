@@ -1,11 +1,19 @@
 """Database session management."""
 from typing import AsyncGenerator
 
+from sqlalchemy.exc import (
+    DatabaseError,
+    DataError,
+    IntegrityError,
+    OperationalError,
+)
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import get_settings
+from app.core.logging import get_logger
 
 settings = get_settings()
+logger = get_logger(__name__)
 
 # Create async engine
 engine = create_async_engine(
@@ -27,13 +35,44 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Dependency for getting async database sessions."""
+    """
+    Dependency for getting async database sessions.
+
+    Yields:
+        AsyncSession: Database session
+
+    Raises:
+        IntegrityError: On constraint violations
+        OperationalError: On connection/database errors
+        DataError: On invalid data
+        DatabaseError: On general database errors
+    """
     async with AsyncSessionLocal() as session:
         try:
             yield session
             await session.commit()
-        except Exception:
+        except IntegrityError as e:
             await session.rollback()
+            logger.error(f"Database integrity error: {e}", exc_info=True)
+            raise
+        except OperationalError as e:
+            await session.rollback()
+            logger.error(f"Database operational error: {e}", exc_info=True)
+            raise
+        except DataError as e:
+            await session.rollback()
+            logger.error(f"Database data error: {e}", exc_info=True)
+            raise
+        except DatabaseError as e:
+            await session.rollback()
+            logger.error(f"Database error: {e}", exc_info=True)
+            raise
+        except Exception as e:
+            await session.rollback()
+            logger.critical(
+                f"Unexpected error in database session: {e}",
+                exc_info=True
+            )
             raise
         finally:
             await session.close()

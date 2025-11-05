@@ -10,7 +10,20 @@ from app.services import APIClient, APIError
 
 
 class LoginScreen(Screen):
-    """Login screen."""
+    """
+    Login screen for user authentication.
+
+    Displays a centered login form with email and password input fields.
+    On successful authentication, stores the JWT token in the APIClient
+    and transitions to the main dashboard screen. Shows error messages
+    for failed login attempts or server connectivity issues.
+
+    Attributes:
+        api_client: Shared APIClient instance for making authenticated requests
+        email_input: Email address input widget
+        password_input: Password input widget (masked)
+        error_label: Label for displaying error messages
+    """
 
     CSS = """
     LoginScreen {

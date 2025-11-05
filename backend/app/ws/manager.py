@@ -115,12 +115,22 @@ class ConnectionManager:
                     "message": f"Unknown message type: {message_type}",
                 }
 
-        except ValidationError as e:
-            return {"type": WSMessageType.ERROR, "message": "Invalid message format", "details": str(e)}
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            logger.warning(f"Invalid JSON from client {client_id}: {message_text[:100]}")
             return {"type": WSMessageType.ERROR, "message": "Invalid JSON"}
+        except ValidationError as e:
+            logger.warning(f"Invalid message format from client {client_id}: {e}")
+            return {"type": WSMessageType.ERROR, "message": "Invalid message format", "details": str(e)}
+        except KeyError as e:
+            logger.warning(f"Missing required field in message from client {client_id}: {e}")
+            return {"type": WSMessageType.ERROR, "message": f"Missing required field: {e}"}
         except Exception as e:
-            return {"type": WSMessageType.ERROR, "message": "Error processing message", "details": str(e)}
+            logger.critical(
+                f"Unexpected error processing message from client {client_id}: {e}",
+                exc_info=True,
+                extra={"client_id": client_id, "message": message_text[:200]}
+            )
+            return {"type": WSMessageType.ERROR, "message": "Internal server error"}
 
     async def broadcast_assignment_update(
         self,
@@ -218,9 +228,21 @@ class ConnectionManager:
                 try:
                     await websocket.send_json(message)
                 except WebSocketDisconnect:
+                    logger.debug(f"Client {client_id} disconnected during broadcast")
+                    disconnected_clients.add(client_id)
+                except (ConnectionError, RuntimeError) as e:
+                    logger.error(
+                        f"Connection error sending to client {client_id}: {e}",
+                        exc_info=True,
+                        extra={"client_id": client_id}
+                    )
                     disconnected_clients.add(client_id)
                 except Exception as e:
-                    logger.error(f"Error sending to client {client_id}: {e}", exc_info=True)
+                    logger.critical(
+                        f"Unexpected error broadcasting to client {client_id}: {e}",
+                        exc_info=True,
+                        extra={"client_id": client_id, "message_type": message.get("type")}
+                    )
                     disconnected_clients.add(client_id)
 
         # Clean up disconnected clients
@@ -239,8 +261,22 @@ class ConnectionManager:
         if websocket:
             try:
                 await websocket.send_json(message)
-            except (WebSocketDisconnect, Exception) as e:
-                logger.error(f"Error sending to client {client_id}: {e}", exc_info=True)
+            except WebSocketDisconnect:
+                logger.debug(f"Client {client_id} disconnected while sending message")
+                await self.disconnect(client_id)
+            except (ConnectionError, RuntimeError) as e:
+                logger.error(
+                    f"Connection error sending to client {client_id}: {e}",
+                    exc_info=True,
+                    extra={"client_id": client_id}
+                )
+                await self.disconnect(client_id)
+            except Exception as e:
+                logger.critical(
+                    f"Unexpected error sending to client {client_id}: {e}",
+                    exc_info=True,
+                    extra={"client_id": client_id, "message_type": message.get("type")}
+                )
                 await self.disconnect(client_id)
 
     def get_connection_count(self) -> int:
