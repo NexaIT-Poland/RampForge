@@ -34,7 +34,23 @@ class RampType(str, PyEnum):
 
 
 class User(BaseModel):
-    """User model."""
+    """
+    User model for authentication and authorization.
+
+    Represents application users with role-based access control (RBAC).
+    Admin users can manage all entities, while Operators have read-only access
+    to ramps and can manage assignments.
+
+    Attributes:
+        email: Unique user email for authentication
+        full_name: User's display name
+        password_hash: Bcrypt hashed password
+        role: ADMIN or OPERATOR role (default: OPERATOR)
+        is_active: Whether user can authenticate (default: True)
+        created_assignments: Assignments created by this user
+        updated_assignments: Assignments last modified by this user
+        audit_logs: Audit trail entries for this user's actions
+    """
 
     __tablename__ = "users"
 
@@ -57,7 +73,20 @@ class User(BaseModel):
 
 
 class Ramp(BaseModel):
-    """Ramp (loading/unloading dock) model."""
+    """
+    Ramp (loading/unloading dock) model.
+
+    Represents physical dock doors/ramps where trucks load or unload freight.
+    Ramps are categorized by direction (Inbound/Outbound) and type (Prime/Buffer).
+    Prime ramps are in the gate area, while Buffer ramps are overflow locations.
+
+    Attributes:
+        code: Unique ramp identifier (e.g., "R1", "R5")
+        description: Human-readable ramp description
+        direction: IB (Inbound) or OB (Outbound)
+        type: PRIME (gate area) or BUFFER (overflow) (default: PRIME)
+        assignments: Dock assignments for this ramp
+    """
 
     __tablename__ = "ramps"
 
@@ -106,7 +135,27 @@ class Load(BaseModel):
 
 
 class Assignment(BaseModel):
-    """Assignment model - links ramp, load, and status."""
+    """
+    Assignment model - links ramp, load, and status.
+
+    Represents the assignment of a load (truck/shipment) to a specific ramp
+    with a current status. This is the core entity that tracks dock operations.
+    Uses optimistic locking (version field) to prevent concurrent update conflicts.
+
+    Attributes:
+        ramp_id: Foreign key to Ramp
+        load_id: Foreign key to Load
+        status_id: Foreign key to Status
+        eta_in: Estimated time of truck arrival
+        eta_out: Estimated time of truck departure
+        created_by: User ID who created the assignment
+        updated_by: User ID who last updated the assignment
+        ramp: Relationship to Ramp entity
+        load: Relationship to Load entity
+        status: Relationship to Status entity
+        creator: Relationship to User who created
+        updater: Relationship to User who last updated
+    """
 
     __tablename__ = "assignments"
 
