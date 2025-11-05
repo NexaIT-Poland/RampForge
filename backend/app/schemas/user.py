@@ -7,6 +7,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.core.validators import validate_password_strength
 from app.db.models import UserRole
 
 
@@ -43,6 +44,15 @@ class UserCreate(UserBase):
 
     password: str = Field(..., min_length=8, max_length=100)
 
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        """Validate password complexity."""
+        error = validate_password_strength(value)
+        if error:
+            raise ValueError(error)
+        return value
+
 
 class UserUpdate(BaseModel):
     """Schema for updating a user."""
@@ -60,6 +70,17 @@ class UserUpdate(BaseModel):
         if value is None:
             return value
         return _normalize_email(value)
+
+    @field_validator("password")
+    @classmethod
+    def validate_optional_password(cls, value: Optional[str]) -> Optional[str]:
+        """Validate password complexity when provided."""
+        if value is None:
+            return value
+        error = validate_password_strength(value)
+        if error:
+            raise ValueError(error)
+        return value
 
 
 class UserResponse(UserBase):

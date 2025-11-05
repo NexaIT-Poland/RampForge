@@ -623,6 +623,8 @@ class EnhancedDockDashboard(Screen):
         self.search_query: str = ""
         self.direction_filter: Optional[str] = None
         self.selected_dock: Optional[RampInfo] = None
+        self.ws_connected = False
+        self.ws_status = "disconnected"
 
     def compose(self) -> ComposeResult:
         """Compose enhanced dashboard layout."""
@@ -693,16 +695,18 @@ class EnhancedDockDashboard(Screen):
                 "Notes",
             )
 
+        # Setup WebSocket connection status callback
+        self.ws_client.set_connection_callback(self._on_ws_connection_change)
+
         # Connect WebSocket
         try:
             await self.ws_client.connect()
             self.ws_client.on_message("assignment_created", self._handle_ws_event)
             self.ws_client.on_message("assignment_updated", self._handle_ws_event)
             self.ws_client.on_message("assignment_deleted", self._handle_ws_event)
-            self._update_status("🔗 Connected")
         except Exception as exc:
             logger.exception("WebSocket connection failed")
-            self._update_status(f"⚠️ Offline – {exc}")
+            self._update_status(f"🔴 Disconnected – {exc}")
 
         await self.action_refresh()
         logger.info("EnhancedDockDashboard mount completed")
@@ -1153,3 +1157,31 @@ class EnhancedDockDashboard(Screen):
         """Update status bar message."""
         label = self.query_one("#status-bar", Label)
         label.update(message)
+
+    def _on_ws_connection_change(self, connected: bool, status: str) -> None:
+        """
+        Handle WebSocket connection status changes.
+
+        Args:
+            connected: True if connected, False otherwise
+            status: Status string ("connected", "disconnected", "reconnecting", etc.)
+        """
+        self.ws_connected = connected
+        self.ws_status = status
+
+        # Update status bar with appropriate icon and message
+        if connected:
+            self._update_status("🟢 Connected")
+        elif status.startswith("reconnecting"):
+            # Extract retry count if present
+            parts = status.split("_")
+            retry_num = parts[1] if len(parts) > 1 else "?"
+            self._update_status(f"🟡 Reconnecting (attempt {retry_num})...")
+        elif status == "max_retries_reached":
+            self._update_status("🔴 Disconnected (max retries reached)")
+        elif status == "timeout":
+            self._update_status("🔴 Connection timeout")
+        elif status == "error":
+            self._update_status("🔴 Connection error")
+        else:
+            self._update_status(f"🔴 Disconnected ({status})")
