@@ -4,10 +4,12 @@ from typing import Optional
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status
 from jose import JWTError
 
+from app.core.logging import get_logger
 from app.core.security import decode_access_token
 from app.ws.manager import manager
 
 router = APIRouter(tags=["websocket"])
+logger = get_logger(__name__)
 
 
 async def get_websocket_user(websocket: WebSocket) -> Optional[dict]:
@@ -101,7 +103,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
     except WebSocketDisconnect:
         await manager.disconnect(client_id)
     except Exception as e:
-        print(f"WebSocket error for client {client_id}: {e}")
+        logger.error(f"WebSocket error for client {client_id}: {e}", exc_info=True)
         await manager.disconnect(client_id)
         await websocket.close(code=status.WS_1011_INTERNAL_ERROR, reason="Internal error")
 
