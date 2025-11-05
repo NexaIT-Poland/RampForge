@@ -87,16 +87,24 @@ async def client(test_db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     Create test HTTP client with database override.
 
     Overrides the get_db dependency to use test database.
+    Disables rate limiting for tests.
     """
     async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
         yield test_db
 
     app.dependency_overrides[get_db] = override_get_db
 
+    # Disable rate limiting for tests by setting enabled=False
+    from app.core.limiter import limiter
+    original_enabled = limiter.enabled
+    limiter.enabled = False
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
+    # Restore original limiter state
+    limiter.enabled = original_enabled
     app.dependency_overrides.clear()
 
 
