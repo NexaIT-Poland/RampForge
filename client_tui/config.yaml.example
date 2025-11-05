@@ -1,0 +1,64 @@
+# DCDock Client Configuration
+#
+# Copy this file to config.yaml and configure for your environment
+#
+
+# API Configuration
+api:
+  # Backend API base URL
+  # Production: https://your-domain.com/api/v1
+  # Development: http://localhost:8000/api/v1
+  base_url: "http://localhost:8000/api/v1"
+
+  # WebSocket URL
+  # Production: wss://your-domain.com/api/v1/ws
+  # Development: ws://localhost:8000/api/v1/ws
+  websocket_url: "ws://localhost:8000/api/v1/ws"
+
+  # Request timeout in seconds
+  timeout: 30
+
+# Logging Configuration
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+
+  # Log file path (relative to client_tui directory)
+  file: "dcdock_client.log"
+
+  # Maximum log file size in MB (rotates when reached)
+  max_size_mb: 10
+
+  # Number of backup log files to keep
+  backup_count: 5
+
+# UI Configuration
+ui:
+  # Theme: dark, light
+  theme: "dark"
+
+  # Refresh interval in seconds (auto-refresh)
+  # Set to 0 to disable auto-refresh
+  refresh_interval: 0
+
+  # Show notifications for WebSocket events
+  notifications: true
+
+# Connection Configuration
+connection:
+  # Auto-reconnect on connection loss
+  auto_reconnect: true
+
+  # Reconnect delay in seconds
+  reconnect_delay: 5
+
+  # Maximum reconnect attempts (0 = infinite)
+  max_reconnect_attempts: 10
+
+# Security
+security:
+  # Verify SSL certificates (set to false for self-signed certs - NOT RECOMMENDED)
+  verify_ssl: true
+
+  # Token refresh threshold in minutes (refresh token before expiry)
+  token_refresh_threshold: 30
