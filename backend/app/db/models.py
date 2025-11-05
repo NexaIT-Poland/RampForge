@@ -56,6 +56,9 @@ class Ramp(BaseModel):
 
     code: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    direction: Mapped[LoadDirection] = mapped_column(
+        Enum(LoadDirection, native_enum=False), nullable=False
+    )
 
     # Relationships
     assignments: Mapped["List[Assignment]"] = relationship("Assignment", back_populates="ramp")

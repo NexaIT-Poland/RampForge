@@ -249,8 +249,8 @@ class AddDockModal(ModalScreen[Dict[str, Any]]):
                 yield Input(placeholder="R9", id="code")
 
             with Vertical(classes="input-group"):
-                yield Static("Type:", classes="input-label")
-                yield Select([("Prime (Gate Area)", "prime"), ("Buffer (Overflow)", "buffer")], id="dock-type")
+                yield Static("Direction:", classes="input-label")
+                yield Select([("Inbound (IB)", "IB"), ("Outbound (OB)", "OB")], id="direction")
 
             with Vertical(classes="input-group"):
                 yield Static("Description (optional):", classes="input-label")
@@ -263,7 +263,7 @@ class AddDockModal(ModalScreen[Dict[str, Any]]):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "confirm":
             code = self.query_one("#code", Input).value
-            dock_type = self.query_one("#dock-type", Select).value
+            direction = self.query_one("#direction", Select).value
             description = self.query_one("#description", Input).value
 
             if not code:
@@ -271,7 +271,7 @@ class AddDockModal(ModalScreen[Dict[str, Any]]):
 
             self.dismiss({
                 "code": code,
-                "dock_type": dock_type or "prime",
+                "direction": direction or "IB",
                 "description": description,
             })
         else:
@@ -878,15 +878,17 @@ class EnhancedDockDashboard(Screen):
     async def _add_dock_async(self, modal_data: Dict[str, Any]) -> None:
         """Async worker to add dock via API."""
         try:
-            # Create the ramp
+            # Create the ramp with direction
+            direction_label = "Inbound" if modal_data["direction"] == "IB" else "Outbound"
             ramp_data = {
                 "code": modal_data["code"],
-                "description": modal_data.get("description", f"{modal_data['dock_type'].title()} dock"),
+                "direction": modal_data["direction"],
+                "description": modal_data.get("description") or f"{direction_label} dock {modal_data['code']}",
             }
             ramp = await self.api_client.create_ramp(ramp_data)
             logger.info(f"Created ramp: {ramp}")
 
-            self._update_status(f"✓ Dock {modal_data['code']} added")
+            self._update_status(f"✓ Dock {modal_data['code']} ({direction_label}) added")
             await self.action_refresh()
         except Exception as exc:
             logger.exception("Failed to add dock")

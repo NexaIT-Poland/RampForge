@@ -72,16 +72,18 @@ async def seed_data() -> None:
         await db.flush()
         print(f"Created {len(users)} users")
 
-        # Create ramps
+        # Create ramps - each ramp is dedicated to either INBOUND or OUTBOUND
         ramps = [
-            Ramp(code="R1", description="Ramp 1 - Loading Bay A"),
-            Ramp(code="R2", description="Ramp 2 - Loading Bay A"),
-            Ramp(code="R3", description="Ramp 3 - Loading Bay B"),
-            Ramp(code="R4", description="Ramp 4 - Loading Bay B"),
-            Ramp(code="R5", description="Ramp 5 - Unloading Bay C"),
-            Ramp(code="R6", description="Ramp 6 - Unloading Bay C"),
-            Ramp(code="R7", description="Ramp 7 - Unloading Bay D"),
-            Ramp(code="R8", description="Ramp 8 - Unloading Bay D"),
+            # Inbound ramps (R1-R4)
+            Ramp(code="R1", description="Ramp 1 - Inbound Loading Bay A", direction=LoadDirection.INBOUND),
+            Ramp(code="R2", description="Ramp 2 - Inbound Loading Bay A", direction=LoadDirection.INBOUND),
+            Ramp(code="R3", description="Ramp 3 - Inbound Loading Bay B", direction=LoadDirection.INBOUND),
+            Ramp(code="R4", description="Ramp 4 - Inbound Loading Bay B", direction=LoadDirection.INBOUND),
+            # Outbound ramps (R5-R8)
+            Ramp(code="R5", description="Ramp 5 - Outbound Unloading Bay C", direction=LoadDirection.OUTBOUND),
+            Ramp(code="R6", description="Ramp 6 - Outbound Unloading Bay C", direction=LoadDirection.OUTBOUND),
+            Ramp(code="R7", description="Ramp 7 - Outbound Unloading Bay D", direction=LoadDirection.OUTBOUND),
+            Ramp(code="R8", description="Ramp 8 - Outbound Unloading Bay D", direction=LoadDirection.OUTBOUND),
         ]
         db.add_all(ramps)
         await db.flush()
