@@ -526,6 +526,102 @@ class InfoPanel(Static):
 
 
 # ============================================================================
+# RICH STATUS BAR
+# ============================================================================
+
+
+class RichStatusBar(Static):
+    """Enhanced status bar with real-time metrics."""
+
+    DEFAULT_CSS = """
+    RichStatusBar {
+        width: 100%;
+        height: 1;
+        background: $panel;
+        color: $text;
+        padding: 0 2;
+    }
+    """
+
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)
+        self._message = "Ready"
+        self._connection = "online"
+        self._occupied = 0
+        self._total = 0
+        self._active_loads = 0
+        self._alerts = 0
+        self._last_sync = 0
+
+    def compose(self) -> ComposeResult:
+        yield Static("", id="status-content")
+
+    def set_message(self, message: str) -> None:
+        """Set a temporary message (for user actions)."""
+        self._message = message
+        self._render_status()
+
+    def update_metrics(
+        self,
+        connection: str = "online",
+        occupied: int = 0,
+        total: int = 0,
+        active_loads: int = 0,
+        alerts: int = 0,
+        last_sync_seconds: int = 0,
+    ) -> None:
+        """Update real-time metrics."""
+        self._connection = connection
+        self._occupied = occupied
+        self._total = total
+        self._active_loads = active_loads
+        self._alerts = alerts
+        self._last_sync = last_sync_seconds
+        self._render_status()
+
+    def _render_status(self) -> None:
+        """Render the status bar with all information."""
+        # Connection icon
+        conn_icon = "🟢" if self._connection == "online" else "🔴" if self._connection == "disconnected" else "🟡"
+
+        # Calculate utilization
+        utilization = (self._occupied / self._total * 100) if self._total > 0 else 0
+
+        # Build status parts
+        parts = [f"{conn_icon} {self._connection.capitalize()}"]
+
+        # Add dock utilization if we have data
+        if self._total > 0:
+            parts.append(f"Docks: {self._occupied}/{self._total} ({utilization:.0f}%)")
+
+        # Add active loads if > 0
+        if self._active_loads > 0:
+            parts.append(f"Active: {self._active_loads}")
+
+        # Add alerts if > 0
+        if self._alerts > 0:
+            parts.append(f"[red]⚠️ {self._alerts} Alerts[/]")
+
+        # Add sync time if > 0
+        if self._last_sync > 0:
+            parts.append(f"Synced: {self._last_sync}s ago")
+
+        # Add message if not "Ready"
+        if self._message and self._message != "Ready":
+            parts.append(f"[yellow]{self._message}[/]")
+
+        # Join with separator
+        status_text = " │ ".join(parts)
+
+        # Update the display
+        try:
+            content = self.query_one("#status-content", Static)
+            content.update(status_text)
+        except Exception:
+            pass  # Widget not mounted yet
+
+
+# ============================================================================
 # MAIN DASHBOARD
 # ============================================================================
 
@@ -589,14 +685,6 @@ class EnhancedDockDashboard(Screen):
     #search-input {
         width: 1fr;
         margin: 0 1;
-    }
-
-    #status-bar {
-        width: 100%;
-        height: 1;
-        background: $panel;
-        padding: 0 2;
-        color: $text;
     }
 
     #main-container {
@@ -721,7 +809,7 @@ class EnhancedDockDashboard(Screen):
             yield Input(placeholder="Search dock, load, notes...", id="search-input")
             yield Label("[1]All [2]IB [3]OB")
 
-        yield Label("🔄 Initializing...", id="status-bar")
+        yield RichStatusBar(id="status-bar")
 
         # Main content: Tables (left) + Info Panel (right)
         with Horizontal(id="main-container"):
@@ -825,6 +913,7 @@ class EnhancedDockDashboard(Screen):
         self.ramp_infos = get_ramp_statuses(self.ramps, self.assignments)
         self._update_tables()
         self._update_info_panel()
+        self._update_status_metrics()
         self._update_status(f"✓ Loaded {len(self.ramp_infos)} docks")
 
     def action_occupy_dock(self) -> None:
@@ -1231,8 +1320,40 @@ class EnhancedDockDashboard(Screen):
 
     def _update_status(self, message: str) -> None:
         """Update status bar message."""
-        label = self.query_one("#status-bar", Label)
-        label.update(message)
+        status_bar = self.query_one("#status-bar", RichStatusBar)
+        status_bar.set_message(message)
+
+    def _update_status_metrics(self) -> None:
+        """Update status bar with real-time metrics."""
+        if not self.ramp_infos:
+            return
+
+        # Count metrics
+        total_docks = len(self.ramp_infos)
+        occupied = sum(1 for r in self.ramp_infos if not r.is_free)
+        active_loads = occupied  # Same as occupied for now
+
+        # Count alerts (delayed + blocked)
+        alerts = sum(1 for r in self.ramp_infos if r.is_overdue or (r.status_code == "CANCELLED"))
+
+        # Determine connection status
+        connection_status = "online" if self.ws_connected else "disconnected"
+        if self.ws_status == "reconnecting":
+            connection_status = "reconnecting"
+
+        # Update status bar
+        try:
+            status_bar = self.query_one("#status-bar", RichStatusBar)
+            status_bar.update_metrics(
+                connection=connection_status,
+                occupied=occupied,
+                total=total_docks,
+                active_loads=active_loads,
+                alerts=alerts,
+                last_sync_seconds=0,  # TODO: track actual sync time
+            )
+        except Exception:
+            pass  # Widget not mounted yet
 
     def _on_ws_connection_change(self, connected: bool, status: str) -> None:
         """
@@ -1244,6 +1365,9 @@ class EnhancedDockDashboard(Screen):
         """
         self.ws_connected = connected
         self.ws_status = status
+
+        # Update metrics with new connection status
+        self._update_status_metrics()
 
         # Update status bar with appropriate icon and message
         if connected:
