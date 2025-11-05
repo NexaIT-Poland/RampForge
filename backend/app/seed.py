@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 
 from app.core.security import get_password_hash
+from app.db.migrations import run_migrations
 from app.db.models import Assignment, Load, LoadDirection, Ramp, Status, User, UserRole
 from app.db.session import AsyncSessionLocal, init_db
 
@@ -13,6 +14,11 @@ async def seed_data() -> None:
     """Seed the database with initial data."""
     print("Initializing database...")
     await init_db()
+
+    # Run migrations first
+    print("Running database migrations...")
+    async with AsyncSessionLocal() as migration_session:
+        await run_migrations(migration_session)
 
     async with AsyncSessionLocal() as db:
         # Check if data already exists

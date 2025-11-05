@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import assignments, audit, auth, loads, ramps, statuses, users, websocket
 from app.core.config import get_settings
-from app.db.session import init_db
+from app.db.migrations import run_migrations
+from app.db.session import AsyncSessionLocal, init_db
 
 settings = get_settings()
 
@@ -17,6 +18,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan handler."""
     # Startup
     await init_db()
+
+    # Run database migrations
+    async with AsyncSessionLocal() as session:
+        await run_migrations(session)
+
     yield
     # Shutdown
     pass
