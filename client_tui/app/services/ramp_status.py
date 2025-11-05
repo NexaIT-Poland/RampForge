@@ -188,6 +188,37 @@ class RampInfo:
         return eta < datetime.now(timezone.utc)
 
     @property
+    def duration_minutes(self) -> Optional[int]:
+        """Return how long dock has been occupied in minutes."""
+        if not self.is_occupied:
+            return None
+
+        start_time = self.created_at_dt or self.updated_at_dt
+        if not start_time:
+            return None
+
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+
+        now = datetime.now(timezone.utc)
+        delta = now - start_time
+        return int(delta.total_seconds() / 60)
+
+    @property
+    def time_left_minutes(self) -> Optional[int]:
+        """Return minutes until ETA out (negative if overdue)."""
+        if not self.is_occupied or not self.eta_out_dt:
+            return None
+
+        eta = self.eta_out_dt
+        if eta.tzinfo is None:
+            eta = eta.replace(tzinfo=timezone.utc)
+
+        now = datetime.now(timezone.utc)
+        delta = eta - now
+        return int(delta.total_seconds() / 60)
+
+    @property
     def is_exception(self) -> bool:
         """Return True when ramp requires attention."""
         if self.status_code in self.EXCEPTION_CODES:

@@ -867,6 +867,7 @@ class EnhancedDockDashboard(Screen):
                 "Load Ref",
                 "ETA Out",
                 "Duration",
+                "Time Left",
                 "Priority",
                 "Notes",
             )
@@ -1188,6 +1189,7 @@ class EnhancedDockDashboard(Screen):
                 info.load_ref or "-",
                 self._format_eta(info),
                 self._format_duration(info),
+                self._format_time_left(info),
                 priority_icon,
                 (info.notes or "-")[:30],
                 key=str(info.ramp_id),
@@ -1322,20 +1324,55 @@ class EnhancedDockDashboard(Screen):
         return dt.strftime("%H:%M")
 
     def _format_duration(self, info: RampInfo) -> str:
-        """Return human friendly duration."""
-        origin = info.created_at_dt or info.updated_at_dt
-        if not origin:
+        """Format how long dock has been occupied."""
+        if not info.is_occupied:
             return "-"
-        now = datetime.now(timezone.utc)
-        delta = now - origin
-        minutes = int(delta.total_seconds() // 60)
+
+        minutes = info.duration_minutes
+        if minutes is None:
+            return "-"
+
         if minutes < 60:
             return f"{minutes}m"
         hours = minutes // 60
+        mins = minutes % 60
         if hours < 24:
-            return f"{hours}h"
+            return f"{hours}h {mins}m" if mins > 0 else f"{hours}h"
         days = hours // 24
-        return f"{days}d"
+        remaining_hours = hours % 24
+        return f"{days}d {remaining_hours}h" if remaining_hours > 0 else f"{days}d"
+
+    def _format_time_left(self, info: RampInfo) -> str:
+        """Format time left until ETA out."""
+        if not info.is_occupied or not info.eta_out_dt:
+            return "-"
+
+        minutes = info.time_left_minutes
+        if minutes is None:
+            return "-"
+
+        # Overdue (negative time left)
+        if minutes < 0:
+            abs_min = abs(minutes)
+            if abs_min < 60:
+                return f"[red]-{abs_min}m[/red]"
+            hours = abs_min // 60
+            return f"[red]-{hours}h[/red]"
+
+        # Time left (positive)
+        if minutes < 60:
+            if minutes <= 15:
+                return f"[yellow]{minutes}m[/yellow]"  # Warning - running out of time
+            return f"{minutes}m"
+
+        hours = minutes // 60
+        mins = minutes % 60
+        time_str = f"{hours}h {mins}m" if mins > 0 else f"{hours}h"
+
+        # Color code based on urgency
+        if hours < 1:
+            return f"[yellow]{time_str}[/yellow]"  # Less than 1 hour - warning
+        return time_str
 
     async def _handle_ws_event(self, _: Dict[str, Any]) -> None:
         """React to WebSocket updates."""
