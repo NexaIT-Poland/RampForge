@@ -10,8 +10,10 @@ from passlib.context import CryptContext
 # 3.13 builds). The import is intentionally unused but ensures side effects run.
 from app.core import bcrypt_compat  # noqa: F401
 from app.core.config import get_settings
+from app.core.logging import get_logger
 
 settings = get_settings()
+logger = get_logger(__name__)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -46,7 +48,6 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
         )
         return payload
     except JWTError as e:
-        # TODO: Replace with proper logging once TASK-CODE-001 is complete
-        # Do NOT log token or secret_key - security risk!
-        print(f"JWT decode error: {e}")
+        # Log error but NEVER log token or secret_key - security risk!
+        logger.debug(f"JWT decode error: {e}")
         return None

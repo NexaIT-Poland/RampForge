@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Set
 from fastapi import WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
+from app.core.logging import get_logger
 from app.db.models import LoadDirection
 from app.ws.schemas import (
     WSAssignmentUpdate,
@@ -18,6 +19,8 @@ from app.ws.schemas import (
     WSMessageType,
     WSSubscribeMessage,
 )
+
+logger = get_logger(__name__)
 
 
 class ConnectionManager:
@@ -217,7 +220,7 @@ class ConnectionManager:
                 except WebSocketDisconnect:
                     disconnected_clients.add(client_id)
                 except Exception as e:
-                    print(f"Error sending to client {client_id}: {e}")
+                    logger.error(f"Error sending to client {client_id}: {e}", exc_info=True)
                     disconnected_clients.add(client_id)
 
         # Clean up disconnected clients
@@ -237,7 +240,7 @@ class ConnectionManager:
             try:
                 await websocket.send_json(message)
             except (WebSocketDisconnect, Exception) as e:
-                print(f"Error sending to client {client_id}: {e}")
+                logger.error(f"Error sending to client {client_id}: {e}", exc_info=True)
                 await self.disconnect(client_id)
 
     def get_connection_count(self) -> int:
