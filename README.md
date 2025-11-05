@@ -125,6 +125,79 @@ python -m app.main
 
 > **Note:** These are demo credentials for testing. In production, generate unique secure passwords and store them safely.
 
+## 🚀 Production Deployment
+
+Ready to deploy DCDock to production? We've got you covered!
+
+### 📚 Complete Deployment Guide
+
+See **[PRODUCTION_DEPLOYMENT_GUIDE.md](PRODUCTION_DEPLOYMENT_GUIDE.md)** for comprehensive step-by-step instructions covering:
+
+- VPS setup and provider recommendations
+- PostgreSQL database configuration
+- Backend deployment with Gunicorn/Uvicorn
+- Nginx reverse proxy setup
+- SSL/TLS with Let's Encrypt
+- Systemd service for auto-restart
+- Client installation for operators
+- Security hardening and monitoring
+- Backup and recovery procedures
+
+### ⚡ Quick Deploy (Automated Script)
+
+For Ubuntu 22.04/24.04 LTS servers:
+
+```bash
+# On your VPS:
+wget https://raw.githubusercontent.com/TMMCx2/DCDock/main/deployment/install_vps.sh
+chmod +x install_vps.sh
+sudo ./install_vps.sh
+```
+
+This automated script will:
+- Install all system dependencies (Python, PostgreSQL, Nginx)
+- Configure production database
+- Set up backend with auto-restart
+- Configure Nginx reverse proxy
+- Optionally set up SSL with Let's Encrypt
+- Create automated backups
+
+### 📱 Client Installation for Operators
+
+Operators install the TUI client on their local machines:
+
+**Windows:**
+1. Download and extract DCDock ZIP
+2. Double-click `client_tui/START_CLIENT_WINDOWS.bat`
+3. Follow on-screen instructions
+
+**Mac/Linux:**
+1. Clone repository: `git clone https://github.com/TMMCx2/DCDock.git`
+2. Run: `cd DCDock/client_tui && ./START_CLIENT_UNIX.sh`
+
+See **[client_tui/README_CLIENT_SETUP.md](client_tui/README_CLIENT_SETUP.md)** for detailed operator instructions.
+
+### 🔧 Production Architecture
+
+```
+Internet → Nginx (SSL) → FastAPI Backend → PostgreSQL
+                              ↓
+                         WebSocket
+                              ↓
+                    Operator TUI Clients
+```
+
+**Minimum Requirements:**
+- 2 GB RAM
+- 2 CPU cores
+- 20 GB SSD
+- Ubuntu 22.04 LTS or higher
+
+**Recommended Providers:**
+- Hetzner (€5.39/month - Best value)
+- DigitalOcean ($12/month - Easiest for beginners)
+- Vultr, OVH, AWS, Azure, GCP
+
 ## API Documentation
 
 Once the server is running, visit:
