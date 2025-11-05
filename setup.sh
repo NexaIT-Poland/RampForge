@@ -62,7 +62,7 @@ echo "✓ email-validator installed"
 # Check if database exists
 if [ ! -f "dcdock.db" ]; then
     echo "Initializing database with demo data..."
-    python -m app.seed
+    $PYTHON_CMD -m app.seed
     echo "✓ Database initialized"
 else
     echo "✓ Database already exists (skipping seed)"
@@ -113,8 +113,8 @@ echo ""
 echo "  2. Open Terminal 2 and run:"
 echo "     ./start_client.sh"
 echo ""
-echo "Demo credentials:"
-echo "  Admin:    admin@dcdock.com / admin123"
-echo "  Operator: operator1@dcdock.com / operator123"
+echo "Demo credentials (v1.0.0):"
+echo "  Admin:    admin@dcdock.com / Admin123!@#"
+echo "  Operator: operator1@dcdock.com / Operator123!@#"
 echo ""
 echo "════════════════════════════════════════════════════════════════"
