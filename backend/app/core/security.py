@@ -46,7 +46,7 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
         )
         return payload
     except JWTError as e:
+        # TODO: Replace with proper logging once TASK-CODE-001 is complete
+        # Do NOT log token or secret_key - security risk!
         print(f"JWT decode error: {e}")
-        print(f"Token: {token[:50]}...")
-        print(f"SECRET_KEY: {settings.secret_key[:30]}...")
         return None
