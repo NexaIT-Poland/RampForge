@@ -1,4 +1,4 @@
-"""Enhanced dock dashboard with table view and info panel."""
+"""Enhanced dock dashboard with full functionality for operators and admins."""
 from __future__ import annotations
 
 import logging
@@ -7,13 +7,15 @@ from typing import Any, Dict, List, Optional
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, Container
-from textual.screen import Screen
+from textual.screen import Screen, ModalScreen
 from textual.widgets import (
+    Button,
     DataTable,
     Footer,
     Header,
     Input,
     Label,
+    Select,
     Static,
 )
 
@@ -23,16 +25,362 @@ from app.services.ramp_status import RampInfo, get_ramp_statuses
 logger = logging.getLogger(__name__)
 
 
+# ============================================================================
+# MODALS
+# ============================================================================
+
+
+class OccupyDockModal(ModalScreen[Dict[str, Any]]):
+    """Modal for occupying a dock with load information."""
+
+    DEFAULT_CSS = """
+    OccupyDockModal {
+        align: center middle;
+    }
+
+    #modal-container {
+        width: 60;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1 2;
+    }
+
+    .modal-title {
+        width: 100%;
+        text-align: center;
+        text-style: bold;
+        color: $primary;
+        margin-bottom: 1;
+    }
+
+    .input-group {
+        width: 100%;
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    .input-label {
+        width: 100%;
+        color: $text;
+        margin-bottom: 0;
+    }
+
+    #button-bar {
+        width: 100%;
+        height: 3;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def __init__(self, dock_code: str) -> None:
+        super().__init__()
+        self.dock_code = dock_code
+
+    def compose(self) -> ComposeResult:
+        with Container(id="modal-container"):
+            yield Static(f"Occupy Dock {self.dock_code}", classes="modal-title")
+
+            with Vertical(classes="input-group"):
+                yield Static("Load Reference:", classes="input-label")
+                yield Input(placeholder="Enter load reference (e.g., IB-12345)", id="load-ref")
+
+            with Vertical(classes="input-group"):
+                yield Static("Direction:", classes="input-label")
+                yield Select([("Inbound", "IB"), ("Outbound", "OB")], id="direction")
+
+            with Vertical(classes="input-group"):
+                yield Static("Notes (optional):", classes="input-label")
+                yield Input(placeholder="Additional notes...", id="notes")
+
+            with Horizontal(id="button-bar"):
+                yield Button("Confirm", variant="primary", id="confirm")
+                yield Button("Cancel", id="cancel")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "confirm":
+            load_ref = self.query_one("#load-ref", Input).value
+            direction = self.query_one("#direction", Select).value
+            notes = self.query_one("#notes", Input).value
+
+            if not load_ref:
+                return  # Validation
+
+            self.dismiss({
+                "load_ref": load_ref,
+                "direction": direction or "IB",
+                "notes": notes,
+            })
+        else:
+            self.dismiss(None)
+
+
+class BlockDockModal(ModalScreen[Dict[str, Any]]):
+    """Modal for blocking a dock with reason."""
+
+    DEFAULT_CSS = """
+    BlockDockModal {
+        align: center middle;
+    }
+
+    #modal-container {
+        width: 60;
+        height: auto;
+        background: $surface;
+        border: thick $error;
+        padding: 1 2;
+    }
+
+    .modal-title {
+        width: 100%;
+        text-align: center;
+        text-style: bold;
+        color: $error;
+        margin-bottom: 1;
+    }
+
+    .input-group {
+        width: 100%;
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    .input-label {
+        width: 100%;
+        color: $text;
+        margin-bottom: 0;
+    }
+
+    #reason-input {
+        width: 100%;
+        height: 5;
+    }
+
+    #button-bar {
+        width: 100%;
+        height: 3;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def __init__(self, dock_code: str) -> None:
+        super().__init__()
+        self.dock_code = dock_code
+
+    def compose(self) -> ComposeResult:
+        with Container(id="modal-container"):
+            yield Static(f"⚠️  Block Dock {self.dock_code}", classes="modal-title")
+
+            with Vertical(classes="input-group"):
+                yield Static("Reason for blocking (required):", classes="input-label")
+                yield Input(
+                    placeholder="e.g., Maintenance, Damaged dock, Safety issue...",
+                    id="reason-input"
+                )
+
+            with Horizontal(id="button-bar"):
+                yield Button("Block Dock", variant="error", id="confirm")
+                yield Button("Cancel", id="cancel")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "confirm":
+            reason = self.query_one("#reason-input", Input).value
+
+            if not reason:
+                return  # Validation
+
+            self.dismiss({"reason": reason})
+        else:
+            self.dismiss(None)
+
+
+class AddDockModal(ModalScreen[Dict[str, Any]]):
+    """Modal for adding a new dock (admin only)."""
+
+    DEFAULT_CSS = """
+    AddDockModal {
+        align: center middle;
+    }
+
+    #modal-container {
+        width: 60;
+        height: auto;
+        background: $surface;
+        border: thick $success;
+        padding: 1 2;
+    }
+
+    .modal-title {
+        width: 100%;
+        text-align: center;
+        text-style: bold;
+        color: $success;
+        margin-bottom: 1;
+    }
+
+    .input-group {
+        width: 100%;
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    .input-label {
+        width: 100%;
+        color: $text;
+        margin-bottom: 0;
+    }
+
+    #button-bar {
+        width: 100%;
+        height: 3;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Container(id="modal-container"):
+            yield Static("➕ Add New Dock", classes="modal-title")
+
+            with Vertical(classes="input-group"):
+                yield Static("Dock Code (e.g., R9, R10):", classes="input-label")
+                yield Input(placeholder="R9", id="code")
+
+            with Vertical(classes="input-group"):
+                yield Static("Type:", classes="input-label")
+                yield Select([("Prime (Gate Area)", "prime"), ("Buffer (Overflow)", "buffer")], id="dock-type")
+
+            with Vertical(classes="input-group"):
+                yield Static("Description (optional):", classes="input-label")
+                yield Input(placeholder="Dock description...", id="description")
+
+            with Horizontal(id="button-bar"):
+                yield Button("Add Dock", variant="success", id="confirm")
+                yield Button("Cancel", id="cancel")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "confirm":
+            code = self.query_one("#code", Input).value
+            dock_type = self.query_one("#dock-type", Select).value
+            description = self.query_one("#description", Input).value
+
+            if not code:
+                return
+
+            self.dismiss({
+                "code": code,
+                "dock_type": dock_type or "prime",
+                "description": description,
+            })
+        else:
+            self.dismiss(None)
+
+
+class AddUserModal(ModalScreen[Dict[str, Any]]):
+    """Modal for adding a new user (admin only)."""
+
+    DEFAULT_CSS = """
+    AddUserModal {
+        align: center middle;
+    }
+
+    #modal-container {
+        width: 60;
+        height: auto;
+        background: $surface;
+        border: thick $success;
+        padding: 1 2;
+    }
+
+    .modal-title {
+        width: 100%;
+        text-align: center;
+        text-style: bold;
+        color: $success;
+        margin-bottom: 1;
+    }
+
+    .input-group {
+        width: 100%;
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    .input-label {
+        width: 100%;
+        color: $text;
+        margin-bottom: 0;
+    }
+
+    #button-bar {
+        width: 100%;
+        height: 3;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Container(id="modal-container"):
+            yield Static("👤 Add New User", classes="modal-title")
+
+            with Vertical(classes="input-group"):
+                yield Static("Email:", classes="input-label")
+                yield Input(placeholder="user@dcdock.com", id="email")
+
+            with Vertical(classes="input-group"):
+                yield Static("Full Name:", classes="input-label")
+                yield Input(placeholder="John Doe", id="fullname")
+
+            with Vertical(classes="input-group"):
+                yield Static("Password:", classes="input-label")
+                yield Input(placeholder="Password", password=True, id="password")
+
+            with Vertical(classes="input-group"):
+                yield Static("Role:", classes="input-label")
+                yield Select([("Operator", "OPERATOR"), ("Admin", "ADMIN")], id="role")
+
+            with Horizontal(id="button-bar"):
+                yield Button("Add User", variant="success", id="confirm")
+                yield Button("Cancel", id="cancel")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "confirm":
+            email = self.query_one("#email", Input).value
+            fullname = self.query_one("#fullname", Input).value
+            password = self.query_one("#password", Input).value
+            role = self.query_one("#role", Select).value
+
+            if not email or not fullname or not password:
+                return
+
+            self.dismiss({
+                "email": email,
+                "full_name": fullname,
+                "password": password,
+                "role": role or "OPERATOR",
+            })
+        else:
+            self.dismiss(None)
+
+
+# ============================================================================
+# INFO PANEL
+# ============================================================================
+
+
 class InfoPanel(Static):
     """Right-side information panel showing dock statistics."""
 
     DEFAULT_CSS = """
     InfoPanel {
-        width: 35;
+        width: 25;
         height: 100%;
         background: $surface-darken-2;
         border-left: solid $panel;
-        padding: 1 2;
+        padding: 1;
         overflow-y: auto;
     }
 
@@ -43,14 +391,10 @@ class InfoPanel(Static):
     }
 
     InfoPanel .info-section {
-        margin-bottom: 2;
+        margin-bottom: 1;
         padding: 1;
         background: $surface-darken-1;
         border: solid $panel-darken-1;
-    }
-
-    InfoPanel .stat-line {
-        margin: 0 0 0 0;
     }
     """
 
@@ -59,8 +403,7 @@ class InfoPanel(Static):
         self._content: Optional[Static] = None
 
     def compose(self) -> ComposeResult:
-        """Compose info panel layout."""
-        yield Static("📊 Dock Statistics", classes="panel-title")
+        yield Static("📊 Stats", classes="panel-title")
         self._content = Static("Loading...", classes="info-section")
         yield self._content
 
@@ -81,31 +424,31 @@ class InfoPanel(Static):
             return
 
         lines = [
-            "[bold cyan]TOTAL DOCKS[/bold cyan]",
-            f"Total: [white]{total}[/white]",
+            f"[white]Total:[/] {total}",
             "",
-            "[bold yellow]PRIME DOCKS[/bold yellow]",
-            f"🟢 Free: [green]{prime_free}[/green]",
-            f"🔵 Occupied: [blue]{prime_occupied}[/blue]",
+            "[yellow]PRIME[/]",
+            f"🟢 {prime_free}  🔵 {prime_occupied}",
             "",
-            "[bold magenta]BUFFER DOCKS[/bold magenta]",
-            f"🟢 Free: [green]{buffer_free}[/green]",
-            f"🔵 Occupied: [blue]{buffer_occupied}[/blue]",
+            "[magenta]BUFFER[/]",
+            f"🟢 {buffer_free}  🔵 {buffer_occupied}",
             "",
-            "[bold white]BY DIRECTION[/bold white]",
-            f"📥 Inbound: [cyan]{ib_count}[/cyan]",
-            f"📤 Outbound: [yellow]{ob_count}[/yellow]",
+            f"📥 IB: {ib_count}",
+            f"📤 OB: {ob_count}",
             "",
-            "[bold red]ALERTS[/bold red]",
-            f"🔴 Urgent: [red]{urgent}[/red]",
-            f"⚠️  Blocked: [orange_red1]{blocked}[/orange_red1]",
+            f"[red]🔴 {urgent}[/]",
+            f"[orange_red1]⚠️  {blocked}[/]",
         ]
 
         self._content.update("\n".join(lines))
 
 
+# ============================================================================
+# MAIN DASHBOARD
+# ============================================================================
+
+
 class EnhancedDockDashboard(Screen):
-    """Enhanced dashboard with table view and statistics panel."""
+    """Enhanced dashboard with full operator and admin functionality."""
 
     CSS = """
     EnhancedDockDashboard {
@@ -135,6 +478,19 @@ class EnhancedDockDashboard(Screen):
         width: auto;
         text-align: right;
         color: $text-muted;
+    }
+
+    #action-bar {
+        width: 100%;
+        height: 3;
+        padding: 0 2;
+        layout: horizontal;
+        align: center middle;
+        background: $panel;
+    }
+
+    #action-bar Button {
+        margin: 0 1;
     }
 
     #filter-bar {
@@ -171,6 +527,7 @@ class EnhancedDockDashboard(Screen):
         height: 100%;
         padding: 1;
         background: $surface-darken-1;
+        overflow-y: auto;
     }
 
     #prime-section {
@@ -226,6 +583,9 @@ class EnhancedDockDashboard(Screen):
         ("1", "filter_all", "All"),
         ("2", "filter_ib", "IB"),
         ("3", "filter_ob", "OB"),
+        ("o", "occupy_dock", "Occupy"),
+        ("f", "free_dock", "Free"),
+        ("b", "block_dock", "Block"),
     ]
 
     def __init__(
@@ -238,11 +598,13 @@ class EnhancedDockDashboard(Screen):
         self.api_client = api_client
         self.ws_client = ws_client
         self.user_data = user_data
+        self.is_admin = user_data.get("role") == "ADMIN"
         self.ramps: List[Dict[str, Any]] = []
         self.assignments: List[Dict[str, Any]] = []
         self.ramp_infos: List[RampInfo] = []
         self.search_query: str = ""
         self.direction_filter: Optional[str] = None
+        self.selected_dock: Optional[RampInfo] = None
 
     def compose(self) -> ComposeResult:
         """Compose enhanced dashboard layout."""
@@ -250,21 +612,33 @@ class EnhancedDockDashboard(Screen):
 
         # Header bar
         with Horizontal(id="header-bar"):
+            role_badge = "🔑 ADMIN" if self.is_admin else "👤 OPERATOR"
             yield Label(
-                f"👤 {self.user_data.get('full_name', 'User')} ({self.user_data.get('role', '')})",
+                f"{role_badge} {self.user_data.get('full_name', 'User')}",
                 id="user-info",
             )
-            yield Label("🚀 DCDock Operations Dashboard", id="header-title")
+            yield Label("🚀 DCDock Operations", id="header-title")
+
+        # Action bar (buttons)
+        with Horizontal(id="action-bar"):
+            yield Button("🔄 Refresh", id="btn-refresh", variant="default")
+            yield Button("➕ Occupy Dock", id="btn-occupy", variant="primary")
+            yield Button("🟢 Free Dock", id="btn-free", variant="success")
+            yield Button("🔴 Block Dock", id="btn-block", variant="error")
+
+            if self.is_admin:
+                yield Button("➕ Add Dock", id="btn-add-dock", variant="warning")
+                yield Button("👤 Add User", id="btn-add-user", variant="warning")
 
         # Filter bar
         with Horizontal(id="filter-bar"):
             yield Label("🔍")
             yield Input(placeholder="Search dock, load, notes...", id="search-input")
-            yield Label(f"[1]All [2]IB [3]OB")
+            yield Label("[1]All [2]IB [3]OB")
 
         yield Label("🔄 Initializing...", id="status-bar")
 
-        # Main content: Table (left) + Info Panel (right)
+        # Main content: Tables (left) + Info Panel (right)
         with Horizontal(id="main-container"):
             with Container(id="table-container"):
                 # Prime section
@@ -292,13 +666,13 @@ class EnhancedDockDashboard(Screen):
         for table in [prime_table, buffer_table]:
             table.add_columns(
                 "Dock",
-                "Zone",
                 "Status",
                 "Direction",
                 "Load Ref",
                 "ETA Out",
                 "Duration",
                 "Priority",
+                "Notes",
             )
 
         # Connect WebSocket
@@ -307,10 +681,10 @@ class EnhancedDockDashboard(Screen):
             self.ws_client.on_message("assignment_created", self._handle_ws_event)
             self.ws_client.on_message("assignment_updated", self._handle_ws_event)
             self.ws_client.on_message("assignment_deleted", self._handle_ws_event)
-            self._update_status("🔗 Connected to live updates")
+            self._update_status("🔗 Connected")
         except Exception as exc:
             logger.exception("WebSocket connection failed")
-            self._update_status(f"⚠️ Offline mode – {exc}")
+            self._update_status(f"⚠️ Offline – {exc}")
 
         await self.action_refresh()
         logger.info("EnhancedDockDashboard mount completed")
@@ -322,6 +696,34 @@ class EnhancedDockDashboard(Screen):
         except Exception:
             logger.exception("Failed to disconnect WebSocket")
 
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button clicks."""
+        button_id = event.button.id
+
+        if button_id == "btn-refresh":
+            await self.action_refresh()
+        elif button_id == "btn-occupy":
+            await self.action_occupy_dock()
+        elif button_id == "btn-free":
+            await self.action_free_dock()
+        elif button_id == "btn-block":
+            await self.action_block_dock()
+        elif button_id == "btn-add-dock" and self.is_admin:
+            await self._add_dock()
+        elif button_id == "btn-add-user" and self.is_admin:
+            await self._add_user()
+
+    async def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        """Handle row selection."""
+        if not event.row_key:
+            return
+
+        # Find selected dock
+        for info in self.ramp_infos:
+            if str(info.ramp_id) == str(event.row_key.value):
+                self.selected_dock = info
+                break
+
     async def action_refresh(self) -> None:
         """Reload all data from API."""
         logger.info("Refreshing dashboard data")
@@ -330,7 +732,7 @@ class EnhancedDockDashboard(Screen):
             self.assignments = await self.api_client.get_assignments()
         except Exception as exc:
             logger.exception("Failed to load data")
-            self._update_status(f"❌ Error loading data: {exc}")
+            self._update_status(f"❌ Error: {exc}")
             return
 
         self.ramp_infos = get_ramp_statuses(self.ramps, self.assignments)
@@ -338,38 +740,92 @@ class EnhancedDockDashboard(Screen):
         self._update_info_panel()
         self._update_status(f"✓ Loaded {len(self.ramp_infos)} docks")
 
+    async def action_occupy_dock(self) -> None:
+        """Occupy selected dock with load."""
+        if not self.selected_dock:
+            self._update_status("⚠️ Select a dock first")
+            return
+
+        if not self.selected_dock.is_free:
+            self._update_status("⚠️ Dock is already occupied")
+            return
+
+        result = await self.app.push_screen_wait(OccupyDockModal(self.selected_dock.ramp_code))
+
+        if result:
+            # TODO: Call API to create assignment
+            self._update_status(f"✓ Dock {self.selected_dock.ramp_code} occupied with {result['load_ref']}")
+            await self.action_refresh()
+
+    async def action_free_dock(self) -> None:
+        """Free selected dock."""
+        if not self.selected_dock:
+            self._update_status("⚠️ Select a dock first")
+            return
+
+        if self.selected_dock.is_free:
+            self._update_status("⚠️ Dock is already free")
+            return
+
+        # TODO: Call API to delete assignment
+        self._update_status(f"✓ Dock {self.selected_dock.ramp_code} freed")
+        await self.action_refresh()
+
+    async def action_block_dock(self) -> None:
+        """Block selected dock with reason."""
+        if not self.selected_dock:
+            self._update_status("⚠️ Select a dock first")
+            return
+
+        result = await self.app.push_screen_wait(BlockDockModal(self.selected_dock.ramp_code))
+
+        if result:
+            # TODO: Call API to mark dock as blocked
+            self._update_status(f"🔴 Dock {self.selected_dock.ramp_code} blocked: {result['reason']}")
+            await self.action_refresh()
+
+    async def _add_dock(self) -> None:
+        """Add new dock (admin only)."""
+        result = await self.app.push_screen_wait(AddDockModal())
+
+        if result:
+            # TODO: Call API to create ramp
+            self._update_status(f"✓ Dock {result['code']} added")
+            await self.action_refresh()
+
+    async def _add_user(self) -> None:
+        """Add new user (admin only)."""
+        result = await self.app.push_screen_wait(AddUserModal())
+
+        if result:
+            # TODO: Call API to create user
+            self._update_status(f"✓ User {result['email']} added")
+
     def _update_tables(self) -> None:
         """Update both prime and buffer tables with filtered data."""
-        # Apply filters
         filtered = self._apply_filters(self.ramp_infos)
 
-        # Split into prime and buffer
-        # Prime: docks R1-R8 (gate area)
-        # Buffer: docks R9+ (overflow area)
         prime_infos = [info for info in filtered if self._is_prime_dock(info.ramp_code)]
         buffer_infos = [info for info in filtered if not self._is_prime_dock(info.ramp_code)]
 
-        # Update tables
         self._populate_table("#prime-table", prime_infos)
         self._populate_table("#buffer-table", buffer_infos)
 
     def _is_prime_dock(self, ramp_code: str) -> bool:
         """Determine if dock is prime (R1-R8) or buffer (R9+)."""
         try:
-            # Extract number from ramp code (e.g., "R1" -> 1)
             if ramp_code.startswith("R"):
                 num = int(ramp_code[1:])
                 return num <= 8
         except (ValueError, IndexError):
             pass
-        return True  # Default to prime if can't parse
+        return True
 
     def _populate_table(self, table_id: str, infos: List[RampInfo]) -> None:
         """Populate a specific table with ramp info."""
         table = self.query_one(table_id, DataTable)
         table.clear()
 
-        # Sort by priority
         sorted_infos = self._sort_by_priority(infos)
 
         for info in sorted_infos:
@@ -378,18 +834,18 @@ class EnhancedDockDashboard(Screen):
 
             table.add_row(
                 info.ramp_code,
-                info.zone or "-",
                 status_text,
                 info.direction_label if info.direction else "-",
                 info.load_ref or "-",
                 self._format_eta(info),
                 self._format_duration(info),
                 priority_icon,
+                (info.notes or "-")[:30],
                 key=str(info.ramp_id),
             )
 
     def _sort_by_priority(self, infos: List[RampInfo]) -> List[RampInfo]:
-        """Sort by priority: overdue > blocked > occupied > free."""
+        """Sort by priority."""
         def priority_key(info: RampInfo) -> tuple:
             if info.is_overdue:
                 return (0, info.ramp_code)
@@ -408,13 +864,10 @@ class EnhancedDockDashboard(Screen):
         query = self.search_query.lower().strip()
 
         for info in infos:
-            # Direction filter
             if self.direction_filter == "IB" and info.direction != "IB":
                 continue
             if self.direction_filter == "OB" and info.direction != "OB":
                 continue
-
-            # Search filter
             if query and not info.matches_query(query):
                 continue
 
@@ -426,7 +879,6 @@ class EnhancedDockDashboard(Screen):
         """Update statistics in right panel."""
         total = len(self.ramp_infos)
 
-        # Split by prime/buffer
         prime_infos = [info for info in self.ramp_infos if self._is_prime_dock(info.ramp_code)]
         buffer_infos = [info for info in self.ramp_infos if not self._is_prime_dock(info.ramp_code)]
 
@@ -456,17 +908,17 @@ class EnhancedDockDashboard(Screen):
         )
 
     def _get_priority_icon(self, info: RampInfo) -> str:
-        """Get priority icon based on ramp state."""
+        """Get priority icon."""
         if info.is_overdue:
-            return "[red]🔴 URGENT[/red]"
+            return "[red]🔴[/red]"
         elif info.is_blocked:
-            return "[orange_red1]🟠 BLOCK[/orange_red1]"
+            return "[orange_red1]🟠[/orange_red1]"
         elif info.is_exception:
-            return "[yellow]⚠️  WARN[/yellow]"
+            return "[yellow]⚠️[/yellow]"
         elif info.is_occupied:
-            return "[cyan]🟢 OK[/cyan]"
+            return "[cyan]🟢[/cyan]"
         else:
-            return "[dim]⚪ FREE[/dim]"
+            return "[dim]⚪[/dim]"
 
     def _format_status(self, info: RampInfo) -> str:
         """Format status with color."""
@@ -522,19 +974,19 @@ class EnhancedDockDashboard(Screen):
         """Show all docks."""
         self.direction_filter = None
         self._update_tables()
-        self._update_status("Filter: All docks")
+        self._update_status("Filter: All")
 
     async def action_filter_ib(self) -> None:
         """Show only inbound."""
         self.direction_filter = "IB"
         self._update_tables()
-        self._update_status("Filter: Inbound only")
+        self._update_status("Filter: IB")
 
     async def action_filter_ob(self) -> None:
         """Show only outbound."""
         self.direction_filter = "OB"
         self._update_tables()
-        self._update_status("Filter: Outbound only")
+        self._update_status("Filter: OB")
 
     async def action_quit(self) -> None:
         """Exit to login screen."""
