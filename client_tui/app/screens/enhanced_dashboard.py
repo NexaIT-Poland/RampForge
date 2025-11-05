@@ -830,6 +830,7 @@ class EnhancedDockDashboard(Screen):
         ("1", "filter_all", "All"),
         ("2", "filter_ib", "IB"),
         ("3", "filter_ob", "OB"),
+        ("s", "toggle_sort", "Sort"),
         ("o", "occupy_dock", "Occupy"),
         ("f", "free_dock", "Free"),
         ("b", "block_dock", "Block"),
@@ -856,6 +857,7 @@ class EnhancedDockDashboard(Screen):
         self.ws_status = "disconnected"
         self._loading = False
         self._spinner_state = 0
+        self.sort_mode: str = "priority"  # "priority", "name_asc", "name_desc"
 
     def compose(self) -> ComposeResult:
         """Compose enhanced dashboard layout."""
@@ -1245,7 +1247,7 @@ class EnhancedDockDashboard(Screen):
         table = self.query_one(table_id, DataTable)
         table.clear()
 
-        sorted_infos = self._sort_by_priority(infos)
+        sorted_infos = self._sort_docks(infos)
 
         for info in sorted_infos:
             priority_icon = self._get_priority_icon(info)
@@ -1264,19 +1266,27 @@ class EnhancedDockDashboard(Screen):
                 key=str(info.ramp_id),
             )
 
-    def _sort_by_priority(self, infos: List[RampInfo]) -> List[RampInfo]:
-        """Sort by priority."""
-        def priority_key(info: RampInfo) -> tuple:
-            if info.is_overdue:
-                return (0, info.ramp_code)
-            elif info.is_blocked:
-                return (1, info.ramp_code)
-            elif info.is_occupied:
-                return (2, info.ramp_code)
-            else:
-                return (3, info.ramp_code)
+    def _sort_docks(self, infos: List[RampInfo]) -> List[RampInfo]:
+        """Sort docks according to current sort_mode."""
+        if self.sort_mode == "name_asc":
+            # Sort by name ascending (A-Z)
+            return sorted(infos, key=lambda x: x.ramp_code)
+        elif self.sort_mode == "name_desc":
+            # Sort by name descending (Z-A)
+            return sorted(infos, key=lambda x: x.ramp_code, reverse=True)
+        else:
+            # Sort by priority (default)
+            def priority_key(info: RampInfo) -> tuple:
+                if info.is_overdue:
+                    return (0, info.ramp_code)
+                elif info.is_blocked:
+                    return (1, info.ramp_code)
+                elif info.is_occupied:
+                    return (2, info.ramp_code)
+                else:
+                    return (3, info.ramp_code)
 
-        return sorted(infos, key=priority_key)
+            return sorted(infos, key=priority_key)
 
     def _apply_filters(self, infos: List[RampInfo]) -> List[RampInfo]:
         """Apply search and direction filters."""
@@ -1475,6 +1485,21 @@ class EnhancedDockDashboard(Screen):
         self.direction_filter = "OB"
         self._update_tables()
         self._update_status("Filter: OB")
+
+    async def action_toggle_sort(self) -> None:
+        """Toggle sorting mode: Priority -> Name A-Z -> Name Z-A -> Priority."""
+        if self.sort_mode == "priority":
+            self.sort_mode = "name_asc"
+            sort_label = "📊 Sort: Name (A-Z)"
+        elif self.sort_mode == "name_asc":
+            self.sort_mode = "name_desc"
+            sort_label = "📊 Sort: Name (Z-A)"
+        else:
+            self.sort_mode = "priority"
+            sort_label = "📊 Sort: Priority"
+
+        self._update_tables()
+        self._update_status(sort_label)
 
     async def action_quit(self) -> None:
         """Exit to login screen."""

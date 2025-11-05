@@ -74,6 +74,23 @@ class LoginScreen(Screen):
         height: auto;
     }
 
+    #company-info {
+        width: 100%;
+        content-align: center middle;
+        color: $text-muted;
+        text-style: italic;
+        margin-top: 2;
+        padding-top: 1;
+        border-top: solid $panel;
+    }
+
+    #company-contact {
+        width: 100%;
+        content-align: center middle;
+        color: $accent;
+        margin-top: 0;
+    }
+
     Footer {
         background: $boost;
     }
@@ -108,6 +125,8 @@ class LoginScreen(Screen):
                 )
                 yield Button("Login", variant="primary", id="login-button")
                 yield Static("", id="error")
+                yield Static("Made by NEXAIT sp. z o.o.", id="company-info")
+                yield Static("📧 office@nexait.pl | 🌐 https://nexait.pl/", id="company-contact")
         yield Footer()
 
     def on_mount(self) -> None:
