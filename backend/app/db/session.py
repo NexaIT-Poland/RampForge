@@ -1,6 +1,7 @@
 """Database session management."""
 from typing import AsyncGenerator
 
+from fastapi import HTTPException
 from sqlalchemy.exc import (
     DatabaseError,
     DataError,
@@ -51,6 +52,11 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         try:
             yield session
             await session.commit()
+        except HTTPException:
+            # HTTPException is application-level error (e.g., 401, 403, 404)
+            # Not a database error - let it pass through without rollback or logging
+            await session.rollback()
+            raise
         except IntegrityError as e:
             await session.rollback()
             logger.error(f"Database integrity error: {e}", exc_info=True)
