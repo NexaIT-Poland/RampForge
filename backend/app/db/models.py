@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, BaseModel, TimestampMixin
@@ -102,6 +102,9 @@ class Ramp(BaseModel):
     # Relationships
     assignments: Mapped["List[Assignment]"] = relationship("Assignment", back_populates="ramp")
 
+    # Indexes for query optimization
+    __table_args__ = (Index("ix_ramps_direction", "direction"),)
+
 
 class Status(BaseModel):
     """Status model for assignments."""
@@ -132,6 +135,9 @@ class Load(BaseModel):
 
     # Relationships
     assignments: Mapped["List[Assignment]"] = relationship("Assignment", back_populates="load")
+
+    # Indexes for query optimization
+    __table_args__ = (Index("ix_loads_direction", "direction"),)
 
 
 class Assignment(BaseModel):
@@ -186,6 +192,12 @@ class Assignment(BaseModel):
     )
     updater: Mapped["User"] = relationship(
         "User", back_populates="updated_assignments", foreign_keys=[updated_by]
+    )
+
+    # Indexes for query optimization
+    __table_args__ = (
+        Index("ix_assignments_created_at", "created_at"),
+        Index("ix_assignments_status_ramp", "status_id", "ramp_id"),  # Composite for common queries
     )
 
 
