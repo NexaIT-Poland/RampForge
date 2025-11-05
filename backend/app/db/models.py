@@ -26,6 +26,13 @@ class LoadDirection(str, PyEnum):
     OUTBOUND = "OB"
 
 
+class RampType(str, PyEnum):
+    """Ramp type enum - Prime (gate area) or Buffer (overflow)."""
+
+    PRIME = "PRIME"
+    BUFFER = "BUFFER"
+
+
 class User(BaseModel):
     """User model."""
 
@@ -58,6 +65,9 @@ class Ramp(BaseModel):
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     direction: Mapped[LoadDirection] = mapped_column(
         Enum(LoadDirection, native_enum=False), nullable=False
+    )
+    type: Mapped[RampType] = mapped_column(
+        Enum(RampType, native_enum=False), default=RampType.PRIME, nullable=False
     )
 
     # Relationships

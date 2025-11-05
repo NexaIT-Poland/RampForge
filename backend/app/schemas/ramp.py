@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from app.db.models import LoadDirection
+from app.db.models import LoadDirection, RampType
 
 
 class RampBase(BaseModel):
@@ -13,6 +13,7 @@ class RampBase(BaseModel):
     code: str = Field(..., min_length=1, max_length=50)
     description: Optional[str] = Field(None, max_length=255)
     direction: LoadDirection
+    type: RampType
 
 
 class RampCreate(RampBase):
@@ -27,6 +28,7 @@ class RampUpdate(BaseModel):
     code: Optional[str] = Field(None, min_length=1, max_length=50)
     description: Optional[str] = Field(None, max_length=255)
     direction: Optional[LoadDirection] = None
+    type: Optional[RampType] = None
 
 
 class RampResponse(RampBase):

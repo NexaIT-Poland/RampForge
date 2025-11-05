@@ -74,21 +74,26 @@ class OccupyDockModal(ModalScreen[Dict[str, Any]]):
     }
     """
 
-    def __init__(self, dock_code: str) -> None:
+    def __init__(self, dock_code: str, direction: str) -> None:
         super().__init__()
         self.dock_code = dock_code
+        self.direction = direction
+        self.is_outbound = direction == "OB"
 
     def compose(self) -> ComposeResult:
         with Container(id="modal-container"):
-            yield Static(f"Occupy Dock {self.dock_code}", classes="modal-title")
+            dept_label = "Outbound" if self.is_outbound else "Inbound"
+            yield Static(f"Occupy Dock {self.dock_code} ({dept_label})", classes="modal-title")
 
             with Vertical(classes="input-group"):
                 yield Static("Load Reference:", classes="input-label")
                 yield Input(placeholder="Enter load reference (e.g., IB-12345)", id="load-ref")
 
-            with Vertical(classes="input-group"):
-                yield Static("Direction:", classes="input-label")
-                yield Select([("Inbound", "IB"), ("Outbound", "OB")], id="direction")
+            # Only show departure date for outbound docks
+            if self.is_outbound:
+                with Vertical(classes="input-group"):
+                    yield Static("Planned Departure (YYYY-MM-DD HH:MM):", classes="input-label")
+                    yield Input(placeholder="2024-12-01 14:00", id="departure-date")
 
             with Vertical(classes="input-group"):
                 yield Static("Notes (optional):", classes="input-label")
@@ -101,17 +106,24 @@ class OccupyDockModal(ModalScreen[Dict[str, Any]]):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "confirm":
             load_ref = self.query_one("#load-ref", Input).value
-            direction = self.query_one("#direction", Select).value
             notes = self.query_one("#notes", Input).value
 
             if not load_ref:
                 return  # Validation
 
-            self.dismiss({
+            result = {
                 "load_ref": load_ref,
-                "direction": direction or "IB",
+                "direction": self.direction,
                 "notes": notes,
-            })
+            }
+
+            # Add departure date for outbound docks
+            if self.is_outbound:
+                departure_date = self.query_one("#departure-date", Input).value
+                if departure_date:
+                    result["departure_date"] = departure_date
+
+            self.dismiss(result)
         else:
             self.dismiss(None)
 
@@ -249,8 +261,12 @@ class AddDockModal(ModalScreen[Dict[str, Any]]):
                 yield Input(placeholder="R9", id="code")
 
             with Vertical(classes="input-group"):
-                yield Static("Direction:", classes="input-label")
+                yield Static("Department (permanent assignment):", classes="input-label")
                 yield Select([("Inbound (IB)", "IB"), ("Outbound (OB)", "OB")], id="direction")
+
+            with Vertical(classes="input-group"):
+                yield Static("Type:", classes="input-label")
+                yield Select([("Prime (Gate Area)", "PRIME"), ("Buffer (Overflow)", "BUFFER")], id="dock-type")
 
             with Vertical(classes="input-group"):
                 yield Static("Description (optional):", classes="input-label")
@@ -264,6 +280,7 @@ class AddDockModal(ModalScreen[Dict[str, Any]]):
         if event.button.id == "confirm":
             code = self.query_one("#code", Input).value
             direction = self.query_one("#direction", Select).value
+            dock_type = self.query_one("#dock-type", Select).value
             description = self.query_one("#description", Input).value
 
             if not code:
@@ -272,6 +289,7 @@ class AddDockModal(ModalScreen[Dict[str, Any]]):
             self.dismiss({
                 "code": code,
                 "direction": direction or "IB",
+                "type": dock_type or "PRIME",
                 "description": description,
             })
         else:
@@ -754,7 +772,11 @@ class EnhancedDockDashboard(Screen):
             if result:
                 self.run_worker(self._occupy_dock_async(result), exclusive=True)
 
-        self.app.push_screen(OccupyDockModal(self.selected_dock.ramp_code), callback=handle_result)
+        # Pass direction from dock (permanent assignment by admin)
+        self.app.push_screen(
+            OccupyDockModal(self.selected_dock.ramp_code, self.selected_dock.direction),
+            callback=handle_result
+        )
 
     async def _occupy_dock_async(self, modal_data: Dict[str, Any]) -> None:
         """Async worker to occupy dock via API."""
@@ -773,6 +795,19 @@ class EnhancedDockDashboard(Screen):
                 "direction": modal_data["direction"],
                 "notes": modal_data.get("notes", ""),
             }
+
+            # Handle departure date for outbound docks
+            if "departure_date" in modal_data and modal_data["departure_date"]:
+                try:
+                    # Parse departure date (format: "YYYY-MM-DD HH:MM")
+                    departure_str = modal_data["departure_date"].strip()
+                    departure_dt = datetime.strptime(departure_str, "%Y-%m-%d %H:%M")
+                    # Convert to ISO format for API
+                    load_data["planned_departure"] = departure_dt.isoformat()
+                except ValueError as e:
+                    self._update_status(f"❌ Invalid departure date format: {e}")
+                    return
+
             load = await self.api_client.create_load(load_data)
             logger.info(f"Created load: {load}")
 
@@ -782,6 +817,11 @@ class EnhancedDockDashboard(Screen):
                 "load_id": load["id"],
                 "status_id": in_progress_status["id"],
             }
+
+            # Add eta_out from load's planned_departure if available
+            if "planned_departure" in load_data:
+                assignment_data["eta_out"] = load_data["planned_departure"]
+
             assignment = await self.api_client.create_assignment(assignment_data)
             logger.info(f"Created assignment: {assignment}")
 
@@ -878,17 +918,19 @@ class EnhancedDockDashboard(Screen):
     async def _add_dock_async(self, modal_data: Dict[str, Any]) -> None:
         """Async worker to add dock via API."""
         try:
-            # Create the ramp with direction
+            # Create the ramp with direction and type
             direction_label = "Inbound" if modal_data["direction"] == "IB" else "Outbound"
+            type_label = "Prime" if modal_data["type"] == "PRIME" else "Buffer"
             ramp_data = {
                 "code": modal_data["code"],
                 "direction": modal_data["direction"],
-                "description": modal_data.get("description") or f"{direction_label} dock {modal_data['code']}",
+                "type": modal_data["type"],
+                "description": modal_data.get("description") or f"{type_label} {direction_label} dock {modal_data['code']}",
             }
             ramp = await self.api_client.create_ramp(ramp_data)
             logger.info(f"Created ramp: {ramp}")
 
-            self._update_status(f"✓ Dock {modal_data['code']} ({direction_label}) added")
+            self._update_status(f"✓ Dock {modal_data['code']} ({type_label} {direction_label}) added")
             await self.action_refresh()
         except Exception as exc:
             logger.exception("Failed to add dock")
@@ -925,21 +967,16 @@ class EnhancedDockDashboard(Screen):
         """Update both prime and buffer tables with filtered data."""
         filtered = self._apply_filters(self.ramp_infos)
 
-        prime_infos = [info for info in filtered if self._is_prime_dock(info.ramp_code)]
-        buffer_infos = [info for info in filtered if not self._is_prime_dock(info.ramp_code)]
+        prime_infos = [info for info in filtered if self._is_prime_dock(info)]
+        buffer_infos = [info for info in filtered if not self._is_prime_dock(info)]
 
         self._populate_table("#prime-table", prime_infos)
         self._populate_table("#buffer-table", buffer_infos)
 
-    def _is_prime_dock(self, ramp_code: str) -> bool:
-        """Determine if dock is prime (R1-R8) or buffer (R9+)."""
-        try:
-            if ramp_code.startswith("R"):
-                num = int(ramp_code[1:])
-                return num <= 8
-        except (ValueError, IndexError):
-            pass
-        return True
+    def _is_prime_dock(self, info: RampInfo) -> bool:
+        """Determine if dock is prime based on admin-assigned type."""
+        # Use the type field from the ramp (set by admin)
+        return info.ramp_type == "PRIME"
 
     def _populate_table(self, table_id: str, infos: List[RampInfo]) -> None:
         """Populate a specific table with ramp info."""
@@ -999,8 +1036,8 @@ class EnhancedDockDashboard(Screen):
         """Update statistics in right panel."""
         total = len(self.ramp_infos)
 
-        prime_infos = [info for info in self.ramp_infos if self._is_prime_dock(info.ramp_code)]
-        buffer_infos = [info for info in self.ramp_infos if not self._is_prime_dock(info.ramp_code)]
+        prime_infos = [info for info in self.ramp_infos if self._is_prime_dock(info)]
+        buffer_infos = [info for info in self.ramp_infos if not self._is_prime_dock(info)]
 
         prime_free = sum(1 for info in prime_infos if info.is_free)
         prime_occupied = len(prime_infos) - prime_free

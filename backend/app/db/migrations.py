@@ -74,12 +74,67 @@ async def migrate_add_ramp_direction(session: AsyncSession) -> None:
         raise
 
 
+async def migrate_add_ramp_type(session: AsyncSession) -> None:
+    """
+    Add type column to ramps table if it doesn't exist.
+
+    Migration for adding type field (Prime/Buffer) to support admin-defined dock types.
+    """
+    logger.info("Checking if 'type' column exists in 'ramps' table...")
+
+    if await check_column_exists(session, "ramps", "type"):
+        logger.info("✓ Column 'type' already exists, skipping migration")
+        return
+
+    logger.info("Adding 'type' column to 'ramps' table...")
+
+    try:
+        # Step 1: Add the type column as nullable
+        await session.execute(
+            text("ALTER TABLE ramps ADD COLUMN type VARCHAR(10)")
+        )
+        logger.info("✓ Added 'type' column")
+
+        # Step 2: Update existing ramps with default type based on code pattern
+        # R1-R8 are considered Prime (gate area), others Buffer
+        await session.execute(
+            text("""
+                UPDATE ramps
+                SET type = CASE
+                    WHEN CAST(SUBSTR(code, 2) AS INTEGER) <= 8 THEN 'PRIME'
+                    ELSE 'BUFFER'
+                END
+                WHERE code LIKE 'R%' AND type IS NULL
+            """)
+        )
+        logger.info("✓ Updated existing ramps with type based on code pattern")
+
+        # Step 3: Set default type for any other ramps without pattern
+        await session.execute(
+            text("""
+                UPDATE ramps
+                SET type = 'PRIME'
+                WHERE type IS NULL
+            """)
+        )
+        logger.info("✓ Set default type for remaining ramps")
+
+        await session.commit()
+        logger.info("✓ Migration completed successfully: ramps.type field added")
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"✗ Migration failed: {e}")
+        raise
+
+
 async def run_migrations(session: AsyncSession) -> None:
     """Run all pending migrations."""
     logger.info("Starting database migrations...")
 
     migrations = [
         migrate_add_ramp_direction,
+        migrate_add_ramp_type,
     ]
 
     for migration in migrations:
