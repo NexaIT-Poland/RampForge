@@ -26,7 +26,7 @@ source venv/bin/activate
 # Check if database exists
 if [ ! -f "dcdock.db" ]; then
     echo "Database not found. Initializing with demo data..."
-    python -m app.seed
+    python3 -m app.seed
 fi
 
 # Start server
@@ -36,4 +36,4 @@ echo "Press Ctrl+C to stop the server"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 
-python run.py
+python3 run.py

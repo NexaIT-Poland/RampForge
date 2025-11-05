@@ -35,12 +35,12 @@ fi
 # Start client
 echo "Starting TUI client..."
 echo ""
-echo "Demo credentials:"
-echo "  Operator: operator1@dcdock.com / operator123"
-echo "  Admin:    admin@dcdock.com / admin123"
+echo "Demo credentials (v1.0.0):"
+echo "  Operator: operator1@dcdock.com / Operator123!@#"
+echo "  Admin:    admin@dcdock.com / Admin123!@#"
 echo ""
 echo "Press Ctrl+C to exit"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 
-python -m app.main
+python3 -m app.main
