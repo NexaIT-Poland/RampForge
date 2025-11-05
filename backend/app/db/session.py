@@ -2,6 +2,7 @@
 from typing import AsyncGenerator
 
 from fastapi import HTTPException
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import (
     DatabaseError,
     DataError,
@@ -43,6 +44,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         AsyncSession: Database session
 
     Raises:
+        HTTPException: Application-level errors (401, 403, 404) - passes through
+        RequestValidationError: Pydantic validation errors (422) - passes through
         IntegrityError: On constraint violations
         OperationalError: On connection/database errors
         DataError: On invalid data
@@ -55,6 +58,11 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         except HTTPException:
             # HTTPException is application-level error (e.g., 401, 403, 404)
             # Not a database error - let it pass through without rollback or logging
+            await session.rollback()
+            raise
+        except RequestValidationError:
+            # RequestValidationError is Pydantic validation error (e.g., 422 Unprocessable Entity)
+            # This is normal input validation, not a database error
             await session.rollback()
             raise
         except IntegrityError as e:
