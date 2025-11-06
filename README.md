@@ -13,6 +13,10 @@
 
 > **🎉 v1.0.0 Released!** - Fully production-ready with enterprise security, comprehensive documentation, and performance optimizations. See [DEVELOPMENT_ROADMAP_v1.0.0.md](DEVELOPMENT_ROADMAP_v1.0.0.md) for complete development history.
 
+<p align="left">
+  <img src="docs/RampForge.jpg" alt="RampForge.jpg"">
+</p>
+
 ## Features
 
 ### Core Features
