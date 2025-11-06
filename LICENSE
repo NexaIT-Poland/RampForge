@@ -1,6 +1,11 @@
-MIT License with Commons Clause
+MIT License
 
-Copyright (c) 2025 NEXAIT sp. z o.o.
+Copyright (c) 2025 — NEXAIT SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ
+Developer contact: jakub.mazurek@nexait.pl
+Company: NEXAIT Sp. z o.o.
+KRS: 0001201062 | NIP: 9731116070 | REGON: 54303826100000
+Address: ul. Kazimierza Wielkiego 7/5, 65-047 Zielona Góra, Poland
+Website: https://nexait.pl/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,41 +14,41 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+-----------------------------------------------------
+"Commons Clause" License Condition v1.0 — ADDENDUM
+-----------------------------------------------------
 
-"Commons Clause" License Condition v1.0
+The Software is provided to you by the Licensor under the License (defined above),
+subject to the following condition:
 
-The Software is provided to you by the Licensor under the License, as defined
-below, subject to the following condition.
-
-Without limiting other conditions in the License, the grant of rights under the
-License will not include, and the License does not grant to you, the right to
-Sell the Software.
+Without limiting other conditions in the License, the grant of rights under
+this License will not include, and the License does not grant to you, the right
+to Sell the Software.
 
 For purposes of the foregoing, "Sell" means practicing any or all of the rights
-granted to you under the License to provide to third parties, for a fee or other
-consideration (including without limitation fees for hosting or consulting/
-support services related to the Software), a product or service whose value
-derives, entirely or substantially, from the functionality of the Software. Any
-license notice or attribution required by the License must also include this
+granted to you under the License to provide the Software to third parties,
+for a fee or other consideration (including without limitation fees for hosting,
+consulting or support services related to the Software), as part of a product
+or service whose value derives, entirely or substantially, from the functionality
+of the Software.
+
+Any license notice or attribution required by the License must also include this
 Commons Clause License Condition notice.
 
-Software: RampForge
-
-License: MIT License
-
-Licensor: NEXAIT sp. z o.o.
+Software: [Nazwa Twojego projektu / repozytorium GitHub]
+License: MIT + Commons Clause
+Licensor: NEXAIT SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ
 
 ---
 
