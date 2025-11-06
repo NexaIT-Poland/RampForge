@@ -1,11 +1,11 @@
 @echo off
-REM DCDock - Start TUI Client
+REM RampForge - Start TUI Client
 REM Simple script to start the terminal user interface client
 
 setlocal
 
 echo ================================================================
-echo   DCDock TUI Client
+echo   RampForge TUI Client
 echo ================================================================
 echo.
 
@@ -39,8 +39,8 @@ REM Start client
 echo Starting TUI client...
 echo.
 echo Demo credentials:
-echo   Operator: operator1@dcdock.com / operator123
-echo   Admin:    admin@dcdock.com / admin123
+echo   Operator: operator1@rampforge.com / operator123
+echo   Admin:    admin@rampforge.com / admin123
 echo.
 echo Press Ctrl+C to exit
 echo ================================================================

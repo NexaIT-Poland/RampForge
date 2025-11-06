@@ -1,6 +1,6 @@
-# DCDock Production Deployment Guide
+# RampForge Production Deployment Guide
 
-**Dla początkujących** - Kompletny przewodnik wdrożenia produkcyjnego DCDock v1.0.0
+**Dla początkujących** - Kompletny przewodnik wdrożenia produkcyjnego RampForge v1.0.0
 
 ## 📑 Spis Treści
 
@@ -154,8 +154,8 @@ psql -U dcdock_user -d dcdock_prod -h localhost
 
 ```bash
 cd /home/dcdock
-git clone https://github.com/TMMCx2/DCDock.git
-cd DCDock
+git clone https://github.com/TMMCx2/RampForge.git
+cd RampForge
 ```
 
 ### 4.2 Konfiguracja środowiska produkcyjnego
@@ -433,19 +433,19 @@ sudo nano /etc/systemd/system/dcdock.service
 
 ```ini
 [Unit]
-Description=DCDock FastAPI Backend
+Description=RampForge FastAPI Backend
 After=network.target postgresql.service
 
 [Service]
 Type=notify
 User=dcdock
 Group=dcdock
-WorkingDirectory=/home/dcdock/DCDock/backend
-Environment="PATH=/home/dcdock/DCDock/backend/venv/bin"
-EnvironmentFile=/home/dcdock/DCDock/backend/.env.production
+WorkingDirectory=/home/dcdock/RampForge/backend
+Environment="PATH=/home/dcdock/RampForge/backend/venv/bin"
+EnvironmentFile=/home/dcdock/RampForge/backend/.env.production
 
 # Gunicorn z Uvicorn workers (production-ready)
-ExecStart=/home/dcdock/DCDock/backend/venv/bin/gunicorn \
+ExecStart=/home/dcdock/RampForge/backend/venv/bin/gunicorn \
     --workers 4 \
     --worker-class uvicorn.workers.UvicornWorker \
     --bind 0.0.0.0:8000 \
@@ -495,7 +495,7 @@ sudo journalctl -u dcdock -f
 
 **Jeśli wszystko działa, zobaczysz:**
 ```
-● dcdock.service - DCDock FastAPI Backend
+● dcdock.service - RampForge FastAPI Backend
      Loaded: loaded
      Active: active (running)
 ```
@@ -526,8 +526,8 @@ Każdy operator musi zainstalować klienta TUI na swoim komputerze (Windows/Mac/
 # 2. Otwórz PowerShell i:
 
 # Clone repo (lub pobierz ZIP i rozpakuj)
-git clone https://github.com/TMMCx2/DCDock.git
-cd DCDock\client_tui
+git clone https://github.com/TMMCx2/RampForge.git
+cd RampForge\client_tui
 
 # Utwórz venv
 python -m venv venv
@@ -561,8 +561,8 @@ python -m app.main
 
 ```bash
 # Clone repo
-git clone https://github.com/TMMCx2/DCDock.git
-cd DCDock/client_tui
+git clone https://github.com/TMMCx2/RampForge.git
+cd RampForge/client_tui
 
 # Setup
 python3 -m venv venv
@@ -601,7 +601,7 @@ python3 -m app.main
 Stwórz prosty dokument:
 
 ```markdown
-# DCDock Client - Instrukcja
+# RampForge Client - Instrukcja
 
 ## Pierwsze uruchomienie:
 1. Kliknij dwukrotnie `start_client.bat` (Windows) lub `start_client.sh` (Mac/Linux)
@@ -677,7 +677,7 @@ location /api/ {
 # Zainstaluj Fail2Ban
 sudo apt install -y fail2ban
 
-# Utwórz konfigurację dla DCDock
+# Utwórz konfigurację dla RampForge
 sudo nano /etc/fail2ban/jail.local
 ```
 
@@ -724,16 +724,16 @@ nano /home/dcdock/monitor_dcdock.sh
 
 # Check if service is running
 if ! systemctl is-active --quiet dcdock; then
-    echo "DCDock service is DOWN! Restarting..."
+    echo "RampForge service is DOWN! Restarting..."
     systemctl restart dcdock
-    echo "DCDock service restarted at $(date)" >> /var/log/dcdock/monitor.log
+    echo "RampForge service restarted at $(date)" >> /var/log/dcdock/monitor.log
 fi
 
 # Check if backend responds
 if ! curl -f -s http://localhost:8000/api/v1/health > /dev/null; then
-    echo "DCDock API not responding! Restarting..."
+    echo "RampForge API not responding! Restarting..."
     systemctl restart dcdock
-    echo "DCDock API restart at $(date)" >> /var/log/dcdock/monitor.log
+    echo "RampForge API restart at $(date)" >> /var/log/dcdock/monitor.log
 fi
 ```
 
@@ -844,7 +844,7 @@ sudo journalctl -u dcdock -n 50
 # Najczęstsze problemy:
 # 1. Błąd połączenia z bazą - sprawdź DATABASE_URL w .env.production
 # 2. Port zajęty - sprawdź: sudo lsof -i :8000
-# 3. Permission errors - sprawdź: ls -la /home/dcdock/DCDock/backend/
+# 3. Permission errors - sprawdź: ls -la /home/dcdock/RampForge/backend/
 ```
 
 ### WebSocket nie działa
@@ -876,10 +876,10 @@ sudo systemctl restart postgresql
 
 W razie problemów:
 - Email: office@nexait.pl
-- GitHub Issues: https://github.com/TMMCx2/DCDock/issues
+- GitHub Issues: https://github.com/TMMCx2/RampForge/issues
 
 ---
 
-**Gratulacje! DCDock jest teraz w produkcji!** 🎉
+**Gratulacje! RampForge jest teraz w produkcji!** 🎉
 
 Created by NEXAIT sp. z o.o. | https://nexait.pl/

@@ -3,31 +3,31 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: dcdock-postgres
+    container_name: rampforge-postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-dcdock_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dcdock_password}
-      POSTGRES_DB: ${POSTGRES_DB:-dcdock}
+      POSTGRES_USER: ${POSTGRES_USER:-rampforge_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rampforge_password}
+      POSTGRES_DB: ${POSTGRES_DB:-rampforge}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dcdock_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rampforge_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - dcdock-network
+      - rampforge-network
 
   backend:
     build:
       context: ../
       dockerfile: docker/backend/Dockerfile
-    container_name: dcdock-backend
+    container_name: rampforge-backend
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-dcdock_user}:${POSTGRES_PASSWORD:-dcdock_password}@postgres:5432/${POSTGRES_DB:-dcdock}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-rampforge_user}:${POSTGRES_PASSWORD:-rampforge_password}@postgres:5432/${POSTGRES_DB:-rampforge}
       SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
       DEBUG: ${DEBUG:-false}
       CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
@@ -41,7 +41,7 @@ services:
     volumes:
       - ../backend/app:/app/app
     networks:
-      - dcdock-network
+      - rampforge-network
     restart: unless-stopped
 
 volumes:
@@ -49,5 +49,5 @@ volumes:
     driver: local
 
 networks:
-  dcdock-network:
+  rampforge-network:
     driver: bridge

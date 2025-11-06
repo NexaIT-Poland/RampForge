@@ -1,5 +1,5 @@
 [project]
-name = "dcdock-tui"
+name = "rampforge-tui"
 version = "0.1.0"
 description = "Dock Scheduling TUI Client"
 requires-python = ">=3.11"
@@ -34,7 +34,7 @@ where = ["."]
 include = ["app*"]
 
 [project.scripts]
-dcdock = "app.main:main"
+rampforge = "app.main:main"
 
 [tool.black]
 line-length = 100

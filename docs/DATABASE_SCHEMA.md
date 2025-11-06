@@ -1,8 +1,8 @@
-# DCDock Database Schema Documentation
+# RampForge Database Schema Documentation
 
 ## Overview
 
-DCDock uses a relational database with support for both SQLite (development) and PostgreSQL (production). The schema is designed to manage dock assignments, track loads, monitor user actions, and maintain audit logs.
+RampForge uses a relational database with support for both SQLite (development) and PostgreSQL (production). The schema is designed to manage dock assignments, track loads, monitor user actions, and maintain audit logs.
 
 **Database Engines:**
 - **Development:** SQLite with async support (`sqlite+aiosqlite`)

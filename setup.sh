@@ -1,11 +1,11 @@
 #!/bin/bash
-# DCDock - Initial Setup Script
+# RampForge - Initial Setup Script
 # This script sets up both backend and client for first-time use
 
 set -e  # Exit on error
 
 echo "════════════════════════════════════════════════════════════════"
-echo "  DCDock - Initial Setup"
+echo "  RampForge - Initial Setup"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 
@@ -60,7 +60,7 @@ pip install email-validator > /dev/null 2>&1
 echo "✓ email-validator installed"
 
 # Check if database exists
-if [ ! -f "dcdock.db" ]; then
+if [ ! -f "rampforge.db" ]; then
     echo "Initializing database with demo data..."
     $PYTHON_CMD -m app.seed
     echo "✓ Database initialized"
@@ -105,7 +105,7 @@ echo "════════════════════════�
 echo "  ✓ Setup Complete!"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
-echo "To start DCDock:"
+echo "To start RampForge:"
 echo ""
 echo "  1. Open Terminal 1 and run:"
 echo "     ./start_backend.sh"
@@ -114,7 +114,7 @@ echo "  2. Open Terminal 2 and run:"
 echo "     ./start_client.sh"
 echo ""
 echo "Demo credentials (v1.0.0):"
-echo "  Admin:    admin@dcdock.com / Admin123!@#"
-echo "  Operator: operator1@dcdock.com / Operator123!@#"
+echo "  Admin:    admin@rampforge.com / Admin123!@#"
+echo "  Operator: operator1@rampforge.com / Operator123!@#"
 echo ""
 echo "════════════════════════════════════════════════════════════════"

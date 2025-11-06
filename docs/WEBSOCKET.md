@@ -1,6 +1,6 @@
 # WebSocket Real-Time Updates
 
-DCDock provides real-time updates via WebSocket for all assignment changes. This enables multiple operators to see live board updates without manual refreshing.
+RampForge provides real-time updates via WebSocket for all assignment changes. This enables multiple operators to see live board updates without manual refreshing.
 
 ## Features
 
@@ -25,7 +25,7 @@ ws://localhost:8000/api/ws?token=YOUR_JWT_TOKEN
 ```bash
 curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@dcdock.com","password":"admin123"}'
+  -d '{"email":"admin@rampforge.dev","password":"admin123"}'
 ```
 
 2. Use the returned `access_token` in the WebSocket URL query parameter:
@@ -92,7 +92,7 @@ Sent immediately after connection:
   "type": "connection_ack",
   "timestamp": "2025-01-01T00:00:00",
   "client_id": "user_1_12345",
-  "message": "Connected to DCDock real-time updates"
+  "message": "Connected to RampForge real-time updates"
 }
 ```
 
@@ -105,7 +105,7 @@ Sent immediately after connection:
   "assignment_id": 7,
   "action": "CREATE",
   "user_id": 3,
-  "user_email": "operator1@dcdock.com",
+  "user_email": "operator1@rampforge.dev",
   "data": {
     "id": 7,
     "ramp_id": 1,
@@ -134,12 +134,12 @@ Sent immediately after connection:
     },
     "creator": {
       "id": 3,
-      "email": "operator1@dcdock.com",
+      "email": "operator1@rampforge.dev",
       "full_name": "John Operator"
     },
     "updater": {
       "id": 3,
-      "email": "operator1@dcdock.com",
+      "email": "operator1@rampforge.dev",
       "full_name": "John Operator"
     }
   }
@@ -155,7 +155,7 @@ Sent immediately after connection:
   "assignment_id": 7,
   "action": "UPDATE",
   "user_id": 4,
-  "user_email": "operator2@dcdock.com",
+  "user_email": "operator2@rampforge.dev",
   "data": {
     // Full assignment data (same structure as created)
     "version": 2  // Note: version incremented
@@ -172,7 +172,7 @@ Sent immediately after connection:
   "assignment_id": 7,
   "action": "DELETE",
   "user_id": 1,
-  "user_email": "admin@dcdock.com",
+  "user_email": "admin@rampforge.dev",
   "data": {
     // Full assignment data before deletion
   }
@@ -223,7 +223,7 @@ async def listen_for_updates():
     async with httpx.AsyncClient() as client:
         response = await client.post(
             "http://localhost:8000/api/auth/login",
-            json={"email": "admin@dcdock.com", "password": "admin123"}
+            json={"email": "admin@rampforge.dev", "password": "admin123"}
         )
         token = response.json()["access_token"]
 
@@ -256,7 +256,7 @@ const loginResponse = await fetch('http://localhost:8000/api/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    email: 'admin@dcdock.com',
+    email: 'admin@rampforge.dev',
     password: 'admin123'
   })
 });
@@ -266,7 +266,7 @@ const { access_token } = await loginResponse.json();
 const ws = new WebSocket(`ws://localhost:8000/api/ws?token=${access_token}`);
 
 ws.onopen = () => {
-  console.log('Connected to DCDock WebSocket');
+  console.log('Connected to RampForge WebSocket');
 
   // Subscribe to OUTBOUND only
   ws.send(JSON.stringify({
@@ -334,13 +334,13 @@ A Python test client is provided:
 python backend/test_websocket_client.py
 
 # Listen with specific user
-python backend/test_websocket_client.py admin@dcdock.com admin123
+python backend/test_websocket_client.py admin@rampforge.dev admin123
 
 # Listen to INBOUND only
-python backend/test_websocket_client.py admin@dcdock.com admin123 IB
+python backend/test_websocket_client.py admin@rampforge.dev admin123 IB
 
 # Listen to OUTBOUND only
-python backend/test_websocket_client.py operator1@dcdock.com operator123 OB
+python backend/test_websocket_client.py operator1@rampforge.dev operator123 OB
 ```
 
 ### Manual Testing
@@ -364,7 +364,7 @@ python backend/test_websocket_client.py
 # Get token
 TOKEN=$(curl -s -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@dcdock.com","password":"admin123"}' | jq -r '.access_token')
+  -d '{"email":"admin@rampforge.dev","password":"admin123"}' | jq -r '.access_token')
 
 # Create assignment
 curl -X POST http://localhost:8000/api/assignments/ \

@@ -19,12 +19,15 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Virtual environments
 venv/
 env/
 ENV/
 .venv
+env.bak/
+venv.bak/
 
 # IDE
 .vscode/
@@ -33,26 +36,38 @@ ENV/
 *.swo
 *~
 .DS_Store
+*.sublime-project
+*.sublime-workspace
 
 # Testing
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 .tox/
 .mypy_cache/
 .ruff_cache/
+.hypothesis/
+nosetests.xml
+coverage.xml
+*.cover
+.cache
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
 
 # Environment
 .env
 .env.local
+.env.*.local
 
 # Logs
 *.log
+logs/
+*.log.*
 
 # PyInstaller
 *.spec
@@ -61,3 +76,24 @@ dist/
 
 # Alembic
 alembic.ini
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/

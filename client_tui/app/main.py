@@ -1,4 +1,4 @@
-"""DCDock TUI Application."""
+"""RampForge TUI Application."""
 import argparse
 from typing import Any, Dict, Optional
 
@@ -8,8 +8,8 @@ from app.screens import DockDashboardScreen, EnhancedDockDashboard, LoginScreen
 from app.services import APIClient, WebSocketClient
 
 
-class DCDockApp(App):
-    """DCDock Terminal User Interface Application."""
+class RampForgeApp(App):
+    """RampForge Terminal User Interface Application."""
 
     CSS = """
     Screen {
@@ -18,7 +18,7 @@ class DCDockApp(App):
     """
 
     def __init__(self, api_url: str, ws_url: str, use_legacy_ui: bool = False) -> None:
-        """Initialize DCDock app."""
+        """Initialize RampForge app."""
         super().__init__()
         self.api_client = APIClient(api_url)
         self.ws_client = WebSocketClient(ws_url)
@@ -45,7 +45,7 @@ class DCDockApp(App):
 
 def main() -> None:
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="DCDock Terminal User Interface")
+    parser = argparse.ArgumentParser(description="RampForge Terminal User Interface")
     parser.add_argument(
         "--api-url",
         default="http://localhost:8000",
@@ -64,7 +64,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    app = DCDockApp(args.api_url, args.ws_url, use_legacy_ui=args.legacy_ui)
+    app = RampForgeApp(args.api_url, args.ws_url, use_legacy_ui=args.legacy_ui)
     app.run()
 
 

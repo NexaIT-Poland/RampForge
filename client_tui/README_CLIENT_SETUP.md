@@ -1,4 +1,4 @@
-# DCDock Client - Installation Guide for Operators
+# RampForge Client - Installation Guide for Operators
 
 **Made by NEXAIT sp. z o.o.**
 📧 office@nexait.pl | 🌐 https://nexait.pl/
@@ -9,7 +9,7 @@
 
 - **Operating System:** Windows 10/11, macOS 10.15+, or Linux
 - **Python:** 3.11 or higher
-- **Internet Connection:** Required for connecting to DCDock server
+- **Internet Connection:** Required for connecting to RampForge server
 - **Terminal:** Command Prompt (Windows) or Terminal (Mac/Linux)
 
 ---
@@ -23,9 +23,9 @@
    - Download Python 3.11+ for Windows
    - **IMPORTANT:** Check "Add Python to PATH" during installation
 
-2. **Download DCDock Client:**
-   - Download ZIP from: https://github.com/TMMCx2/DCDock
-   - Extract to a folder (e.g., `C:\DCDock`)
+2. **Download RampForge Client:**
+   - Download ZIP from: https://github.com/TMMCx2/RampForge
+   - Extract to a folder (e.g., `C:\RampForge`)
 
 3. **Run the Client:**
    - Open the `client_tui` folder
@@ -62,11 +62,11 @@
    sudo dnf install python3 python3-pip
    ```
 
-2. **Download DCDock Client:**
+2. **Download RampForge Client:**
    ```bash
    cd ~
-   git clone https://github.com/TMMCx2/DCDock.git
-   cd DCDock/client_tui
+   git clone https://github.com/TMMCx2/RampForge.git
+   cd RampForge/client_tui
    ```
 
 3. **Make script executable:**
@@ -101,7 +101,7 @@
 
 ## ⌨️ Keyboard Shortcuts
 
-Once logged in, use these shortcuts to work with DCDock:
+Once logged in, use these shortcuts to work with RampForge:
 
 ### Navigation
 - **Arrow Keys** or **Mouse** - Select dock
@@ -175,10 +175,10 @@ pip install -r requirements.txt
 ### Login Screen
 ```
 ┌─────────────────────────────────┐
-│          DCDock                 │
+│          RampForge                 │
 │ Distribution Center Scheduling  │
 │                                 │
-│ Email: operator1@dcdock.com     │
+│ Email: operator1@rampforge.dev     │
 │ Password: ********              │
 │                                 │
 │        [Login]                  │
@@ -191,7 +191,7 @@ pip install -r requirements.txt
 ### Main Dashboard
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ 👤 OPERATOR John Doe    DCDock v1.0.0 | NEXAIT         │
+│ 👤 OPERATOR John Doe    RampForge v1.0.0 | NEXAIT         │
 ├──────────────────────────────────────────────────────────┤
 │ [🔄 Refresh] [➕ Occupy] [🟢 Free] [🔴 Block]           │
 ├──────────────────────────────────────────────────────────┤
@@ -237,9 +237,9 @@ If you encounter any issues:
 
 ---
 
-## ℹ️ About DCDock
+## ℹ️ About RampForge
 
-DCDock is a Distribution Center Dock Scheduling system designed for efficient warehouse operations. It provides real-time tracking of dock assignments, load management, and operator coordination.
+RampForge is a Distribution Center Dock Scheduling system designed for efficient warehouse operations. It provides real-time tracking of dock assignments, load management, and operator coordination.
 
 **Version:** 1.0.0
 **Created by:** NEXAIT sp. z o.o.
@@ -248,4 +248,4 @@ DCDock is a Distribution Center Dock Scheduling system designed for efficient wa
 
 ---
 
-**Thank you for using DCDock!** 🚀
+**Thank you for using RampForge!** 🚀

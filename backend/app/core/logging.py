@@ -1,4 +1,4 @@
-"""Logging configuration for DCDock backend."""
+"""Logging configuration for RampForge backend."""
 import logging
 import sys
 from pathlib import Path
@@ -63,7 +63,7 @@ def setup_logging(log_level: Optional[str] = None) -> logging.Logger:
 
     # File Handler - rotating daily, keep 30 days
     file_handler = TimedRotatingFileHandler(
-        filename=log_dir / "dcdock.log",
+        filename=log_dir / "rampforge.log",
         when="midnight",
         interval=1,
         backupCount=30,
@@ -81,7 +81,7 @@ def setup_logging(log_level: Optional[str] = None) -> logging.Logger:
 
     # Error File Handler - separate file for errors only
     error_handler = TimedRotatingFileHandler(
-        filename=log_dir / "dcdock_errors.log",
+        filename=log_dir / "rampforge_errors.log",
         when="midnight",
         interval=1,
         backupCount=90,  # Keep errors longer (90 days)

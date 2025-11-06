@@ -1,4 +1,4 @@
-"""API client for DCDock backend."""
+"""API client for RampForge backend."""
 from typing import Any, Dict, List, Optional
 
 import httpx
@@ -19,7 +19,7 @@ class APIError(Exception):
 
 
 class APIClient:
-    """HTTP client for DCDock API."""
+    """HTTP client for RampForge API."""
 
     def __init__(self, base_url: str = "http://localhost:8000") -> None:
         """Initialize API client."""

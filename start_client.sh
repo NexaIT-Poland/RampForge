@@ -1,11 +1,11 @@
 #!/bin/bash
-# DCDock - Start TUI Client
+# RampForge - Start TUI Client
 # Simple script to start the terminal user interface client
 
 set -e  # Exit on error
 
 echo "════════════════════════════════════════════════════════════════"
-echo "  DCDock TUI Client"
+echo "  RampForge TUI Client"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 
@@ -36,8 +36,8 @@ fi
 echo "Starting TUI client..."
 echo ""
 echo "Demo credentials (v1.0.0):"
-echo "  Operator: operator1@dcdock.com / Operator123!@#"
-echo "  Admin:    admin@dcdock.com / Admin123!@#"
+echo "  Operator: operator1@rampforge.com / Operator123!@#"
+echo "  Admin:    admin@rampforge.com / Admin123!@#"
 echo ""
 echo "Press Ctrl+C to exit"
 echo "════════════════════════════════════════════════════════════════"

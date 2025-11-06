@@ -2,7 +2,7 @@
 
 ## Automatic Migration (Recommended)
 
-Starting from commit `8244f2e`, DCDock includes automatic database migration support.
+Starting from commit `8244f2e`, RampForge includes automatic database migration support.
 
 ### For Existing Databases
 
@@ -47,10 +47,10 @@ If automatic migration fails, you can manually update your database:
 
 ```bash
 # Backup current database (optional)
-cp backend/dcdock.db backend/dcdock.db.backup
+cp backend/rampforge.db backend/rampforge.db.backup
 
 # Remove old database
-rm backend/dcdock.db
+rm backend/rampforge.db
 
 # Restart backend - will create new database with seed data
 ./start_backend.sh
@@ -60,7 +60,7 @@ rm backend/dcdock.db
 
 ```bash
 # Open SQLite shell
-sqlite3 backend/dcdock.db
+sqlite3 backend/rampforge.db
 
 # Run migration SQL
 ALTER TABLE ramps ADD COLUMN direction VARCHAR(2);
@@ -115,13 +115,13 @@ If you see errors during migration:
 
 1. **Check database permissions**:
    ```bash
-   ls -la backend/dcdock.db
+   ls -la backend/rampforge.db
    # Should be writable by your user
    ```
 
 2. **Check database integrity**:
    ```bash
-   sqlite3 backend/dcdock.db "PRAGMA integrity_check;"
+   sqlite3 backend/rampforge.db "PRAGMA integrity_check;"
    ```
 
 3. **Try manual migration** (see Option 2 above)
@@ -132,12 +132,12 @@ If migration says "column already exists" but you still get errors:
 
 ```bash
 # Verify column exists
-sqlite3 backend/dcdock.db "PRAGMA table_info(ramps);"
+sqlite3 backend/rampforge.db "PRAGMA table_info(ramps);"
 
 # Check for NULL values
-sqlite3 backend/dcdock.db "SELECT code, direction FROM ramps WHERE direction IS NULL;"
+sqlite3 backend/rampforge.db "SELECT code, direction FROM ramps WHERE direction IS NULL;"
 ```
 
 ### Need Help?
 
-Create an issue at: https://github.com/TMMCx2/DCDock/issues
+Create an issue at: https://github.com/TMMCx2/RampForge/issues

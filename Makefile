@@ -1,7 +1,7 @@
 .PHONY: help install-backend install-client install test lint format clean seed run-backend run-client
 
 help:
-	@echo "DCDock - Dock Scheduling Application"
+	@echo "RampForge - Dock Scheduling Application"
 	@echo ""
 	@echo "Available commands:"
 	@echo "  make install-backend  - Install backend dependencies"
@@ -50,4 +50,4 @@ clean:
 	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
-	rm -f backend/dcdock.db
+	rm -f backend/rampforge.db

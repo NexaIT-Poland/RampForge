@@ -1,6 +1,6 @@
-# DCDock Troubleshooting Guide
+# RampForge Troubleshooting Guide
 
-This guide helps you diagnose and resolve common issues with DCDock.
+This guide helps you diagnose and resolve common issues with RampForge.
 
 ---
 
@@ -236,8 +236,8 @@ asyncio.run(test())
 1. **Verify credentials:**
 ```bash
 # Default demo credentials (after Phase 4):
-# Admin: admin@dcdock.com / Admin123!@#
-# Operator: operator1@dcdock.com / Operator123!@#
+# Admin: admin@rampforge.dev / Admin123!@#
+# Operator: operator1@rampforge.dev / Operator123!@#
 ```
 
 2. **Check password complexity** (Phase 4+):
@@ -254,7 +254,7 @@ from sqlalchemy import select
 
 async def reset_password():
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.email == "admin@dcdock.com"))
+        result = await db.execute(select(User).where(User.email == "admin@rampforge.dev"))
         user = result.scalar_one()
         user.password_hash = get_password_hash("NewPassword123!")
         await db.commit()
@@ -541,7 +541,7 @@ systeminfo  # Windows
 ```
 
 4. **Report issue** on GitHub with:
-- DCDock version
+- RampForge version
 - Full error message and stack trace
 - Steps to reproduce
 - Relevant log excerpts

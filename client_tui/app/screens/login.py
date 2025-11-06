@@ -1,4 +1,4 @@
-"""Login screen for DCDock TUI."""
+"""Login screen for RampForge TUI."""
 from typing import Any
 
 from textual.app import ComposeResult
@@ -110,11 +110,11 @@ class LoginScreen(Screen):
         yield Header()
         with Center():
             with Vertical(id="login-container"):
-                yield Static("DCDock", id="title")
+                yield Static("RampForge", id="title")
                 yield Static("Distribution Center Dock Scheduling", id="subtitle")
                 yield Label("Email:")
                 yield Input(
-                    placeholder="admin@dcdock.com",
+                    placeholder="admin@rampforge.dev",
                     id="email",
                 )
                 yield Label("Password:")

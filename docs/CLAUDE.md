@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**DCDock v1.0.0** - Production-ready distribution center dock scheduling application with enterprise-grade security.
+**RampForge v1.0.0** - Production-ready distribution center dock scheduling application with enterprise-grade security.
 
-DCDock is a distribution center dock scheduling application with a FastAPI backend and a Textual TUI client. It supports multi-user concurrent access with real-time WebSocket updates, optimistic locking for conflict resolution, and role-based access control.
+RampForge is a distribution center dock scheduling application with a FastAPI backend and a Textual TUI client. It supports multi-user concurrent access with real-time WebSocket updates, optimistic locking for conflict resolution, and role-based access control.
 
 **Requirements:** Python 3.11 or higher (Python 3.13+ recommended)
 
@@ -382,8 +382,8 @@ cd backend && pytest tests/test_specific_file.py::test_function_name
 
 **v1.0.0 Update:** Passwords now meet complexity requirements
 
-- Admin: `admin@dcdock.com` / `Admin123!@#`
-- Operator: `operator1@dcdock.com` / `Operator123!@#`
+- Admin: `admin@rampforge.dev` / `Admin123!@#`
+- Operator: `operator1@rampforge.dev` / `Operator123!@#`
 
 **Password Requirements:**
 - Minimum 8 characters

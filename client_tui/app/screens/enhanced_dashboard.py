@@ -412,7 +412,7 @@ class AddUserModal(ModalScreen[Dict[str, Any]]):
 
             with Vertical(classes="input-group"):
                 yield Static("Email:", classes="input-label")
-                yield Input(placeholder="user@dcdock.com", id="email")
+                yield Input(placeholder="user@rampforge.dev", id="email")
 
             with Vertical(classes="input-group"):
                 yield Static("Full Name:", classes="input-label")
@@ -870,7 +870,7 @@ class EnhancedDockDashboard(Screen):
                 f"{role_badge} {self.user_data.get('full_name', 'User')}",
                 id="user-info",
             )
-            yield Label("🚀 DCDock v1.0.0 | Made by NEXAIT sp. z o.o.", id="header-title")
+            yield Label("🚀 RampForge v1.0.0 | Made by NEXAIT sp. z o.o.", id="header-title")
 
         # Action bar (buttons)
         with Horizontal(id="action-bar"):
@@ -1537,7 +1537,7 @@ class EnhancedDockDashboard(Screen):
                 total=total_docks,
                 active_loads=active_loads,
                 alerts=alerts,
-                last_sync_seconds=0,  # TODO: track actual sync time
+                last_sync_seconds=0,
             )
         except Exception:
             pass  # Widget not mounted yet

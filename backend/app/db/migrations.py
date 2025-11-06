@@ -1,4 +1,4 @@
-"""Database migration utilities for DCDock."""
+"""Database migration utilities for RampForge."""
 import logging
 from typing import Any
 

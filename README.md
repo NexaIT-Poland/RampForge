@@ -1,9 +1,9 @@
-# DCDock - Distribution Center Dock Scheduling
+# RampForge - Distribution Center Dock Scheduling
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/TMMCx2/DCDock)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/TMMCx2/RampForge)
 [![Python](https://img.shields.io/badge/python-3.11+-green.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-85%25%20backend%20%7C%2065%25%20frontend-success.svg)](https://github.com/TMMCx2/DCDock)
-[![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen.svg)](https://github.com/TMMCx2/DCDock)
+[![Tests](https://img.shields.io/badge/tests-85%25%20backend%20%7C%2065%25%20frontend-success.svg)](https://github.com/TMMCx2/RampForge)
+[![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen.svg)](https://github.com/TMMCx2/RampForge)
 
 **Enterprise-grade dock management system** - A production-ready terminal application (TUI) for managing loading/unloading operations in distribution centers.
 
@@ -116,18 +116,18 @@ python -m app.main
 > **⚠️ v1.0.0 Update:** Passwords now meet complexity requirements (8+ chars, uppercase, lowercase, digit, special character)
 
 **Admin:**
-- Email: `admin@dcdock.com`
+- Email: `admin@rampforge.dev`
 - Password: `Admin123!@#`
 
 **Operator:**
-- Email: `operator1@dcdock.com`
+- Email: `operator1@rampforge.dev`
 - Password: `Operator123!@#`
 
 > **Note:** These are demo credentials for testing. In production, generate unique secure passwords and store them safely.
 
 ## 🚀 Production Deployment
 
-Ready to deploy DCDock to production? We've got you covered!
+Ready to deploy RampForge to production? We've got you covered!
 
 ### 📚 Complete Deployment Guide
 
@@ -149,7 +149,7 @@ For Ubuntu 22.04/24.04 LTS servers:
 
 ```bash
 # On your VPS:
-wget https://raw.githubusercontent.com/TMMCx2/DCDock/main/deployment/install_vps.sh
+wget https://raw.githubusercontent.com/TMMCx2/RampForge/main/deployment/install_vps.sh
 chmod +x install_vps.sh
 sudo ./install_vps.sh
 ```
@@ -167,13 +167,13 @@ This automated script will:
 Operators install the TUI client on their local machines:
 
 **Windows:**
-1. Download and extract DCDock ZIP
+1. Download and extract RampForge ZIP
 2. Double-click `client_tui/START_CLIENT_WINDOWS.bat`
 3. Follow on-screen instructions
 
 **Mac/Linux:**
-1. Clone repository: `git clone https://github.com/TMMCx2/DCDock.git`
-2. Run: `cd DCDock/client_tui && ./START_CLIENT_UNIX.sh`
+1. Clone repository: `git clone https://github.com/TMMCx2/RampForge.git`
+2. Run: `cd RampForge/client_tui && ./START_CLIENT_UNIX.sh`
 
 See **[client_tui/README_CLIENT_SETUP.md](client_tui/README_CLIENT_SETUP.md)** for detailed operator instructions.
 
@@ -207,7 +207,7 @@ Once the server is running, visit:
 ## Project Structure
 
 ```
-DCDock/
+RampForge/
 ├── backend/
 │   ├── app/
 │   │   ├── api/          # API route handlers
@@ -310,7 +310,7 @@ For outbound docks with scheduled departures:
 
 ### Automatic Database Migrations
 
-DCDock includes an automatic migration system that runs on backend startup:
+RampForge includes an automatic migration system that runs on backend startup:
 
 - **Zero Downtime**: Existing databases are automatically upgraded
 - **Idempotent**: Safe to run multiple times
@@ -370,7 +370,7 @@ When you update your installation, simply restart the backend - migrations run a
 - Login audit trail with IP tracking
 - Production-ready v1.0.0 release
 
-**🎉 All 6 phases completed - DCDock v1.0.0 is production-ready!**
+**🎉 All 6 phases completed - RampForge v1.0.0 is production-ready!**
 
 ## Development Commands
 
@@ -449,7 +449,7 @@ make seed
 
 ## WebSocket Real-Time Updates
 
-DCDock provides real-time updates for all assignment changes via WebSocket:
+RampForge provides real-time updates for all assignment changes via WebSocket:
 
 - **Instant notifications**: Assignment CREATE, UPDATE, DELETE operations
 - **Conflict alerts**: Real-time notifications when optimistic locking detects conflicts
@@ -468,7 +468,7 @@ python backend/test_websocket_client.py
 # Terminal 3: Make changes via API
 TOKEN=$(curl -s -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@dcdock.com","password":"Admin123!@#"}' | jq -r '.access_token')
+  -d '{"email":"admin@rampforge.dev","password":"Admin123!@#"}' | jq -r '.access_token')
 
 curl -X POST http://localhost:8000/api/assignments/ \
   -H "Authorization: Bearer $TOKEN" \
@@ -579,7 +579,7 @@ All assignment changes broadcast via WebSocket appear instantly in all views.
 
 ### PostgreSQL Setup
 
-DCDock supports PostgreSQL for production deployments. The application automatically detects the database type from the `DATABASE_URL`.
+RampForge supports PostgreSQL for production deployments. The application automatically detects the database type from the `DATABASE_URL`.
 
 **1. Install PostgreSQL:**
 ```bash
@@ -732,7 +732,7 @@ MIT
 
 ## Contributing
 
-DCDock v1.0.0 is production-ready with enterprise-grade security. For deployment:
+RampForge v1.0.0 is production-ready with enterprise-grade security. For deployment:
 
 **Required security steps:**
 - ✅ Password complexity enforcement (implemented)

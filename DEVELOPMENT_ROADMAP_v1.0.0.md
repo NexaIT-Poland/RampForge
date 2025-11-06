@@ -1,8 +1,8 @@
-# DCDock - Development Roadmap do wersji 1.0.0
+# RampForge - Development Roadmap do wersji 1.0.0
 
 ## 📋 Informacje Ogólne
 
-**Dokument:** Plan Rozwoju Aplikacji DCDock
+**Dokument:** Plan Rozwoju Aplikacji RampForge
 **Wersja docelowa:** 1.0.0
 **Data utworzenia:** 2025-01-05
 **Autor:** Senior Full Stack Developer - Analiza Kompletna
@@ -1197,7 +1197,7 @@ class AssignmentCreate(BaseModel):
 
 ```bash
 # backend/.env.example
-# DCDock Backend Configuration
+# RampForge Backend Configuration
 
 # ============================================================
 # DATABASE CONFIGURATION
@@ -1602,7 +1602,7 @@ result = await db.execute(
 - [ ] **TASK-BUILD-001**: Stworzyć dcdock.spec dla Windows
   - Plik: `client_tui/dcdock.spec`
   - Configuration: Single-file executable
-  - Icon: Add DCDock icon
+  - Icon: Add RampForge icon
   - Hidden imports: Textual, websockets
   - Czas: 2h
   - Priorytet: MEDIUM
@@ -1831,7 +1831,7 @@ result = await db.execute(
 
 ## 🎉 v1.0.0 RELEASE READY
 
-All 6 phases completed! DCDock is now production-ready with:
+All 6 phases completed! RampForge is now production-ready with:
 - ✅ **Security:** Password complexity, JWT in headers, rate limiting, login audit
 - ✅ **Testing:** 85%+ backend coverage, 65%+ frontend coverage
 - ✅ **Reliability:** WebSocket auto-reconnection, optimistic locking
@@ -1904,8 +1904,8 @@ All 6 phases completed! DCDock is now production-ready with:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/TMMCx2/DCDock.git
-cd DCDock
+git clone https://github.com/TMMCx2/RampForge.git
+cd RampForge
 
 # 2. Create branch for v1.0.0 work
 git checkout -b feature/v1.0.0-preparation
@@ -1959,7 +1959,7 @@ git push origin feature/TASK-SEC-001-jwt-fix
 
 ### Overview
 
-DCDock v1.0.0 is a production-ready distribution center dock scheduling application with enterprise-grade security, comprehensive testing, and complete documentation. The application has been developed through 6 structured phases over 12 weeks, progressing from initial foundation to a fully production-ready system.
+RampForge v1.0.0 is a production-ready distribution center dock scheduling application with enterprise-grade security, comprehensive testing, and complete documentation. The application has been developed through 6 structured phases over 12 weeks, progressing from initial foundation to a fully production-ready system.
 
 **Release Date:** 2025-01-05
 **Total Development Time:** 12 weeks (6 phases × 2 weeks)
@@ -2079,7 +2079,7 @@ DCDock v1.0.0 is a production-ready distribution center dock scheduling applicat
 
 ### Security Compliance
 
-DCDock v1.0.0 implements security best practices suitable for:
+RampForge v1.0.0 implements security best practices suitable for:
 
 - ✅ **SOC 2 Compliance** - Audit logging, access controls, authentication events
 - ✅ **GDPR Compliance** - User data protection, audit trails, secure password storage
@@ -2151,12 +2151,12 @@ Old credentials no longer work due to password complexity requirements:
 
 ```bash
 # OLD (no longer valid):
-Admin: admin@dcdock.com / admin123
-Operator: operator1@dcdock.com / operator123
+Admin: admin@rampforge.dev / admin123
+Operator: operator1@rampforge.dev / operator123
 
 # NEW (v1.0.0):
-Admin: admin@dcdock.com / Admin123!@#
-Operator: operator1@dcdock.com / Operator123!@#
+Admin: admin@rampforge.dev / Admin123!@#
+Operator: operator1@rampforge.dev / Operator123!@#
 ```
 
 #### 2. Update WebSocket Connection (Recommended)
@@ -2240,7 +2240,7 @@ See `docs/PRODUCTION.md` for complete deployment guide.
 
 ### Acknowledgments
 
-DCDock v1.0.0 was developed following industry best practices and modern Python development standards:
+RampForge v1.0.0 was developed following industry best practices and modern Python development standards:
 
 - **FastAPI** - High-performance async web framework
 - **SQLAlchemy** - Powerful async ORM
@@ -2255,8 +2255,8 @@ Special thanks to the open-source community for these excellent tools.
 ## 📞 Support & Questions
 
 ### Contact
-- **GitHub Issues:** https://github.com/TMMCx2/DCDock/issues
-- **Documentation:** https://github.com/TMMCx2/DCDock/tree/main/docs
+- **GitHub Issues:** https://github.com/TMMCx2/RampForge/issues
+- **Documentation:** https://github.com/TMMCx2/RampForge/tree/main/docs
 
 ### Contributing
 Aby kontrybuować do projektu:
@@ -2271,7 +2271,7 @@ Aby kontrybuować do projektu:
 **Document Version:** 1.0
 **Last Updated:** 2025-01-05
 **Next Review:** Po zakończeniu Phase 1
-**Maintained By:** DCDock Development Team
+**Maintained By:** RampForge Development Team
 
 ---
 

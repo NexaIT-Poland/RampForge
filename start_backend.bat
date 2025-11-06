@@ -1,11 +1,11 @@
 @echo off
-REM DCDock - Start Backend Server
+REM RampForge - Start Backend Server
 REM Simple script to start the backend API server
 
 setlocal
 
 echo ================================================================
-echo   DCDock Backend Server
+echo   RampForge Backend Server
 echo ================================================================
 echo.
 
@@ -25,7 +25,7 @@ echo Activating virtual environment...
 call venv\Scripts\activate.bat
 
 REM Check if database exists
-if not exist "dcdock.db" (
+if not exist "rampforge.db" (
     echo Database not found. Initializing with demo data...
     python -m app.seed
 )

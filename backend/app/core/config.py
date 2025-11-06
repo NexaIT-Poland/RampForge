@@ -18,12 +18,12 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_name: str = "DCDock API"
+    app_name: str = "RampForge API"
     app_version: str = "0.1.0"
     debug: bool = False
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///./dcdock.db"
+    database_url: str = "sqlite+aiosqlite:///./rampforge.db"
 
     # Security
     secret_key: str = Field(default_factory=lambda: token_urlsafe(32))

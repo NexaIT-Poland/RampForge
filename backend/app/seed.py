@@ -35,42 +35,42 @@ async def seed_data() -> None:
         # WARNING: Change these passwords immediately after first login in production!
         users = [
             User(
-                email="admin@dcdock.com",
+                email="admin@rampforge.dev",
                 full_name="Admin User",
                 password_hash=get_password_hash("Admin123!@#"),
                 role=UserRole.ADMIN,
                 is_active=True,
             ),
             User(
-                email="admin2@dcdock.com",
+                email="admin2@rampforge.dev",
                 full_name="Admin Two",
                 password_hash=get_password_hash("Admin123!@#"),
                 role=UserRole.ADMIN,
                 is_active=True,
             ),
             User(
-                email="operator1@dcdock.com",
+                email="operator1@rampforge.dev",
                 full_name="John Operator",
                 password_hash=get_password_hash("Operator123!@#"),
                 role=UserRole.OPERATOR,
                 is_active=True,
             ),
             User(
-                email="operator2@dcdock.com",
+                email="operator2@rampforge.dev",
                 full_name="Jane Operator",
                 password_hash=get_password_hash("Operator123!@#"),
                 role=UserRole.OPERATOR,
                 is_active=True,
             ),
             User(
-                email="operator3@dcdock.com",
+                email="operator3@rampforge.dev",
                 full_name="Bob Operator",
                 password_hash=get_password_hash("Operator123!@#"),
                 role=UserRole.OPERATOR,
                 is_active=True,
             ),
             User(
-                email="operator4@dcdock.com",
+                email="operator4@rampforge.dev",
                 full_name="Alice Operator",
                 password_hash=get_password_hash("Operator123!@#"),
                 role=UserRole.OPERATOR,
@@ -248,8 +248,8 @@ async def seed_data() -> None:
 
         print("✓ Database seeded successfully!")
         print("\nDemo credentials:")
-        print("  Admin: admin@dcdock.com / Admin123!@#")
-        print("  Operator: operator1@dcdock.com / Operator123!@#")
+        print("  Admin: admin@rampforge.dev / Admin123!@#")
+        print("  Operator: operator1@rampforge.dev / Operator123!@#")
         print("\n⚠️  WARNING: Change default passwords after first login in production!")
 
 

@@ -1,11 +1,11 @@
 @echo off
-REM DCDock - Initial Setup Script for Windows
+REM RampForge - Initial Setup Script for Windows
 REM This script sets up both backend and client for first-time use
 
 setlocal enabledelayedexpansion
 
 echo ================================================================
-echo   DCDock - Initial Setup
+echo   RampForge - Initial Setup
 echo ================================================================
 echo.
 
@@ -56,7 +56,7 @@ pip install email-validator >nul 2>&1
 echo email-validator installed
 
 REM Check if database exists
-if not exist "dcdock.db" (
+if not exist "rampforge.db" (
     echo Initializing database with demo data...
     python -m app.seed
     echo Database initialized
@@ -101,7 +101,7 @@ echo ================================================================
 echo   Setup Complete!
 echo ================================================================
 echo.
-echo To start DCDock:
+echo To start RampForge:
 echo.
 echo   1. Open Command Prompt 1 and run:
 echo      start_backend.bat
@@ -110,8 +110,8 @@ echo   2. Open Command Prompt 2 and run:
 echo      start_client.bat
 echo.
 echo Demo credentials:
-echo   Admin:    admin@dcdock.com / admin123
-echo   Operator: operator1@dcdock.com / operator123
+echo   Admin:    admin@rampforge.com / admin123
+echo   Operator: operator1@rampforge.com / operator123
 echo.
 echo ================================================================
 pause

@@ -1,11 +1,11 @@
 #!/bin/bash
-# DCDock - Start Backend Server
+# RampForge - Start Backend Server
 # Simple script to start the backend API server
 
 set -e  # Exit on error
 
 echo "════════════════════════════════════════════════════════════════"
-echo "  DCDock Backend Server"
+echo "  RampForge Backend Server"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 
@@ -24,7 +24,7 @@ echo "Activating virtual environment..."
 source venv/bin/activate
 
 # Check if database exists
-if [ ! -f "dcdock.db" ]; then
+if [ ! -f "rampforge.db" ]; then
     echo "Database not found. Initializing with demo data..."
     python3 -m app.seed
 fi

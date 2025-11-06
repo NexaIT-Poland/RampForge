@@ -1,5 +1,5 @@
 [project]
-name = "dcdock-backend"
+name = "rampforge-backend"
 version = "0.1.0"
 description = "Dock Scheduling Backend API"
 requires-python = ">=3.11"

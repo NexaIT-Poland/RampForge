@@ -1,4 +1,4 @@
-# DCDock UI/UX Improvements
+# RampForge UI/UX Improvements
 
 ## 📋 Executive Summary
 
@@ -720,4 +720,4 @@ The Enhanced Dashboard addresses the core challenge of managing 132+ dock assign
 
 *Document version: 1.0*
 *Last updated: 2025-01-XX*
-*Author: DCDock Development Team*
+*Author: RampForge Development Team*

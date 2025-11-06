@@ -1,1 +1,1 @@
-"""Core utilities for DCDock TUI client."""
+"""Core utilities for RampForge TUI client."""

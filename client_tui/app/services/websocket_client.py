@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 class WebSocketClient:
     """
-    WebSocket client for DCDock real-time updates.
+    WebSocket client for RampForge real-time updates.
 
     Features:
     - Automatic reconnection with exponential backoff

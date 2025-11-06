@@ -1,4 +1,4 @@
-"""Logging configuration for DCDock TUI client."""
+"""Logging configuration for RampForge TUI client."""
 import logging
 import sys
 from pathlib import Path

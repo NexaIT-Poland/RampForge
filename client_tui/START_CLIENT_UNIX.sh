@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-#  DCDock Client Launcher (Linux/Mac)
+#  RampForge Client Launcher (Linux/Mac)
 #  Made by NEXAIT sp. z o.o.
 # ============================================================
 
@@ -8,7 +8,7 @@ cd "$(dirname "$0")"
 
 echo ""
 echo "========================================"
-echo "  DCDock Client v1.0.0"
+echo "  RampForge Client v1.0.0"
 echo "  Made by NEXAIT sp. z o.o."
 echo "========================================"
 echo ""
@@ -66,7 +66,7 @@ if [ ! -f "config.yaml" ]; then
 fi
 
 # Start client
-echo "[*] Starting DCDock Client..."
+echo "[*] Starting RampForge Client..."
 echo ""
 python -m app.main
 

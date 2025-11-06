@@ -44,7 +44,7 @@ class WSConnectionAck(BaseModel):
     type: WSMessageType = WSMessageType.CONNECTION_ACK
     timestamp: datetime
     client_id: str
-    message: str = "Connected to DCDock real-time updates"
+    message: str = "Connected to RampForge real-time updates"
 
 
 class WSAssignmentUpdate(BaseModel):

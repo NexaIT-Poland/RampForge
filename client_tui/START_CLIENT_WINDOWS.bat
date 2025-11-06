@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM  DCDock Client Launcher (Windows)
+REM  RampForge Client Launcher (Windows)
 REM  Made by NEXAIT sp. z o.o.
 REM ============================================================
 
@@ -8,7 +8,7 @@ cd /d "%~dp0"
 
 echo.
 echo ========================================
-echo   DCDock Client v1.0.0
+echo   RampForge Client v1.0.0
 echo   Made by NEXAIT sp. z o.o.
 echo ========================================
 echo.
@@ -66,7 +66,7 @@ if not exist "config.yaml" (
 )
 
 REM Start client
-echo [*] Starting DCDock Client...
+echo [*] Starting RampForge Client...
 echo.
 python -m app.main
 

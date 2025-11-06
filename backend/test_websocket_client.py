@@ -143,7 +143,7 @@ async def main() -> None:
     import sys
 
     # Parse command-line arguments
-    email = sys.argv[1] if len(sys.argv) > 1 else "admin@dcdock.com"
+    email = sys.argv[1] if len(sys.argv) > 1 else "admin@rampforge.dev"
     password = sys.argv[2] if len(sys.argv) > 2 else "admin123"
     direction = sys.argv[3] if len(sys.argv) > 3 else None
 
@@ -170,14 +170,14 @@ async def main() -> None:
 if __name__ == "__main__":
     print()
     print("Usage: python test_websocket_client.py [email] [password] [direction]")
-    print("  email: User email (default: admin@dcdock.com)")
+    print("  email: User email (default: admin@rampforge.dev)")
     print("  password: User password (default: admin123)")
     print("  direction: Optional filter IB or OB (default: None)")
     print()
     print("Examples:")
     print("  python test_websocket_client.py")
-    print("  python test_websocket_client.py admin@dcdock.com admin123")
-    print("  python test_websocket_client.py operator1@dcdock.com operator123 IB")
+    print("  python test_websocket_client.py admin@rampforge.dev admin123")
+    print("  python test_websocket_client.py operator1@rampforge.dev operator123 IB")
     print()
 
     asyncio.run(main())
