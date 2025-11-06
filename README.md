@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/RampForge_logo.png" alt="RampForge_logo.png" width="200">
+</p>
+
 # RampForge - Distribution Center Dock Scheduling
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/TMMCx2/RampForge)
